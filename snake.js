@@ -1,4 +1,4 @@
-Game = {
+var Game = {
 	tileSize: 20,
 	borderSize: 5,
 	rows: 16,
@@ -36,39 +36,68 @@ Crafty.c("Cell", {
 Crafty.c("Grid", {
 	grid: function(x, y) {
 		this.cells = {};
-		var max_x = Game.w / Game.offset;
-		var max_y = Game.h / Game.offset;
-		for (var x = 0; x <= max_x; x++) {
-			for (var y = 0; y <= max_y; y++) {
-				this.cells[this._key(x, y)] = Crafty.e("Cell")
-				.at(x, y).tweenColor("#aaaaaa");
-			};
-		};
+		this._createCells();
+		this.clearGrid();
 		return this;
 	},
 	at: function(x, y) {
 		return this.cells[this._key(x, y)];
 	},
+	clearGrid: function() {
+		var maxDelay = 0;
+		for (var x = 0; x <= Game.rows; x++) {
+			for (var y = 0; y <= Game.cols; y++) {
+				var delay = this._delayedTweenColor(x, y);
+				maxDelay = Math.max(maxDelay, delay);
+			};
+		};
+		var self = this;
+		Crafty.e("Delay").delay(function(){
+			self.trigger("Ready");
+		}, maxDelay + 800, 0);
+	},
+	_createCells: function() {
+		for (var x = 0; x <= Game.rows; x++) {
+			for (var y = 0; y <= Game.cols; y++) {
+				this.cells[this._key(x, y)] = Crafty.e("Cell").at(x, y);
+			};
+		};
+	},
 	_key: function(x, y) {
 		return "" + x + ", " + y;
+	},
+	_delayedTweenColor: function(x, y) {
+		var delay = 100*x + 100*y;
+		var self = this;
+		Crafty.e("Delay").delay(function() {
+			self.at(x, y).tweenColor("#aaaaaa");
+		}, delay, 0);
+		return delay;
 	},
 });
 
 Crafty.scene("Main", function() {
 	var g = Crafty.e("Grid").grid(Game.rows, Game.cols);
 	
-	Crafty.e("Delay").delay(function(){
-		var randint = function(n){
-			return Math.floor(Math.random() * n);
-		};
-		var x = randint(Game.rows);
-		var y = randint(Game.cols);
-		var red = randint(256);
-		var green = randint(256);
-		var blue = randint(256);
-		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
-		g.at(x, y).tweenColor(rgb);
-	}, 50, -1);
+	g.one("Ready", function(){
+		Crafty.e("Delay").delay(function(){
+			var randint = function(n){
+				return Math.floor(Math.random() * n);
+			};
+			var x = randint(Game.rows);
+			var y = randint(Game.cols);
+			var red = randint(256);
+			var green = randint(256);
+			var blue = randint(256);
+			var rgb = "rgb(" + red + "," + green + "," + blue + ")";
+			g.at(x, y).tweenColor(rgb);
+		}, 50, -1);
+		Crafty.e("Keyboard").bind("KeyDown", function() {
+			if (this.isDown("SPACE")) {
+				g.clearGrid();
+			};
+		});
+	});
 });
 
 window.onload = function() {
