@@ -1,23 +1,32 @@
 var Game = {
+	rows: 16,
+	cols: 9,
 	tileSize: 20,
 	borderSize: 5,
-	rows: 16,
-	cols: 12,
 }
 
 Game.offset = Game.tileSize + Game.borderSize;
-Game.w = Game.offset * Game.rows + Game.borderSize;
-Game.h = Game.offset * Game.cols + Game.borderSize;
+Game.w = Game.rows * Game.offset + Game.borderSize;
+Game.h = Game.cols * Game.offset + Game.borderSize;
+
+var Utils = {
+	randInt: function(n){
+		return Math.floor(Math.random() * n);
+	},
+}
 
 Crafty.c("Cell", {
+	tileSize: Game.tileSize,
+	borderSize: Game.borderSize,
+	offset: Game.tileSize + Game.borderSize,
 	init: function() {
 		this.requires("2D, DOM, Color, Tween");
-		this.attr({w: Game.tileSize, h: Game.tileSize});
+		this.attr({w: this.tileSize, h: this.tileSize});
 	},
 	at: function(x, y) {
 		this.attr({
-			x: Game.borderSize + Game.offset * x,
-			y: Game.borderSize + Game.offset * y,
+			x: this.borderSize + this.offset * x,
+			y: this.borderSize + this.offset * y,
 		});
 		return this;
 	},
@@ -26,15 +35,16 @@ Crafty.c("Cell", {
 		var delta = 400;
 		this.tween({h: 0, alpha: 0}, delta)
 		.one("TweenEnd", function(){
-			_this.color(color);
-			_this.tween({h: Game.tileSize, alpha: 1}, delta);
+			this.color(color);
+			this.tween({h: this.tileSize, alpha: 1}, delta);
 		});
-		return this;
 	},
 });
 
 Crafty.c("Grid", {
-	grid: function(x, y) {
+	grid: function(rows, cols) {
+		this.rows = rows;
+		this.cols = cols;
 		this.cells = {};
 		this._createCells();
 		this.clearGrid();
@@ -44,9 +54,10 @@ Crafty.c("Grid", {
 		return this.cells[this._key(x, y)];
 	},
 	clearGrid: function() {
+		this.trigger("StopFlipping");
 		var maxDelay = 0;
-		for (var x = 0; x <= Game.rows; x++) {
-			for (var y = 0; y <= Game.cols; y++) {
+		for (var x = 0; x < this.rows; x++) {
+			for (var y = 0; y < this.cols; y++) {
 				var delay = this._delayedTweenColor(x, y);
 				maxDelay = Math.max(maxDelay, delay);
 			};
@@ -54,11 +65,12 @@ Crafty.c("Grid", {
 		var self = this;
 		Crafty.e("Delay").delay(function(){
 			self.trigger("Ready");
+			self.trigger("StartFlipping");
 		}, maxDelay + 800, 0);
 	},
 	_createCells: function() {
-		for (var x = 0; x <= Game.rows; x++) {
-			for (var y = 0; y <= Game.cols; y++) {
+		for (var x = 0; x < this.rows; x++) {
+			for (var y = 0; y < this.cols; y++) {
 				this.cells[this._key(x, y)] = Crafty.e("Cell").at(x, y);
 			};
 		};
@@ -76,28 +88,46 @@ Crafty.c("Grid", {
 	},
 });
 
-Crafty.scene("Main", function() {
-	var g = Crafty.e("Grid").grid(Game.rows, Game.cols);
-	
-	g.one("Ready", function(){
-		Crafty.e("Delay").delay(function(){
-			var randint = function(n){
-				return Math.floor(Math.random() * n);
-			};
-			var x = randint(Game.rows);
-			var y = randint(Game.cols);
-			var red = randint(256);
-			var green = randint(256);
-			var blue = randint(256);
-			var rgb = "rgb(" + red + "," + green + "," + blue + ")";
-			g.at(x, y).tweenColor(rgb);
-		}, 50, -1);
-		Crafty.e("Keyboard").bind("KeyDown", function() {
+Crafty.c("RandomFlipper", {
+	init: function() {
+		this.requires("Delay, Grid");
+		this.bind("StartFlipping", this.startFlipping);
+		this.bind("StopFlipping", this.stopFlipping);
+	},
+	flipRandomCell: function() {
+		var x = Utils.randInt(this.rows);
+		var y = Utils.randInt(this.cols);
+		var red = Utils.randInt(256);
+		var green = Utils.randInt(256);
+		var blue = Utils.randInt(256);
+		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
+		this.at(x, y).tweenColor(rgb);
+	},
+	startFlipping: function() {
+		this.delay(this.flipRandomCell, 50, -1);
+	},
+	stopFlipping: function() {
+		this.cancelDelay(this.flipRandomCell);
+	},
+	remove: function() {
+		this.stopFlipping();
+	},
+});
+
+Crafty.c("ClearOnSpace", {
+	init: function() {
+		this.requires("Grid, Keyboard");
+		this.bind("KeyDown", function() {
 			if (this.isDown("SPACE")) {
-				g.clearGrid();
+				this.clearGrid();
 			};
 		});
-	});
+	},
+});
+
+Crafty.scene("Main", function() {
+	var g = Crafty.e("Grid, RandomFlipper, ClearOnSpace")
+	.grid(Game.rows, Game.cols);
 });
 
 window.onload = function() {
