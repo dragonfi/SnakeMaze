@@ -90,18 +90,21 @@ Crafty.c("Grid", {
 
 Crafty.c("RandomFlipper", {
 	init: function() {
-		this.requires("Delay, Grid");
-		this.bind("StartFlipping", this.startFlipping);
-		this.bind("StopFlipping", this.stopFlipping);
+		this.requires("Delay");
+	},
+	randomFlipper: function(grid) {
+		this.grid = grid
+		this.grid.bind("StartFlipping", this.startFlipping.bind(this));
+		this.grid.bind("StopFlipping", this.stopFlipping.bind(this));
 	},
 	flipRandomCell: function() {
-		var x = Utils.randInt(this.rows);
-		var y = Utils.randInt(this.cols);
+		var x = Utils.randInt(this.grid.rows);
+		var y = Utils.randInt(this.grid.cols);
 		var red = Utils.randInt(256);
 		var green = Utils.randInt(256);
 		var blue = Utils.randInt(256);
 		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
-		this.at(x, y).tweenColor(rgb);
+		this.grid.at(x, y).tweenColor(rgb);
 	},
 	startFlipping: function() {
 		this.delay(this.flipRandomCell, 50, -1);
@@ -126,8 +129,8 @@ Crafty.c("ClearOnSpace", {
 });
 
 Crafty.scene("Main", function() {
-	var g = Crafty.e("Grid, RandomFlipper, ClearOnSpace")
-	.grid(Game.rows, Game.cols);
+	var g = Crafty.e("Grid, ClearOnSpace").grid(Game.rows, Game.cols);
+	var rf = Crafty.e("RandomFlipper").randomFlipper(g);
 });
 
 window.onload = function() {
