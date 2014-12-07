@@ -20,7 +20,7 @@ Crafty.c("Cell", {
 	borderSize: Game.borderSize,
 	offset: Game.tileSize + Game.borderSize,
 	init: function() {
-		this.requires("2D, DOM, Color, Tween");
+		this.requires("2D, DOM, Color, Tween, Persist");
 		this.attr({w: this.tileSize, h: this.tileSize});
 	},
 	at: function(x, y) {
@@ -92,19 +92,23 @@ Crafty.c("RandomFlipper", {
 	init: function() {
 		this.requires("Delay");
 	},
-	randomFlipper: function(grid) {
-		this.grid = grid
-		this.grid.bind("StartFlipping", this.startFlipping.bind(this));
-		this.grid.bind("StopFlipping", this.stopFlipping.bind(this));
+	grid: function(grid) {
+		if (grid === undefined) {
+			return this._grid;
+		};
+		this._grid = grid;
+		this._grid.bind("StartFlipping", this.startFlipping.bind(this));
+		this._grid.bind("StopFlipping", this.stopFlipping.bind(this));
+		return this;
 	},
 	flipRandomCell: function() {
-		var x = Utils.randInt(this.grid.rows);
-		var y = Utils.randInt(this.grid.cols);
+		var x = Utils.randInt(this._grid.rows);
+		var y = Utils.randInt(this._grid.cols);
 		var red = Utils.randInt(256);
 		var green = Utils.randInt(256);
 		var blue = Utils.randInt(256);
 		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
-		this.grid.at(x, y).tweenColor(rgb);
+		this._grid.at(x, y).tweenColor(rgb);
 	},
 	startFlipping: function() {
 		this.delay(this.flipRandomCell, 50, -1);
@@ -129,15 +133,18 @@ Crafty.c("ClearOnSpace", {
 });
 
 Crafty.scene("Main", function() {
-	var g = Crafty.e("Grid, ClearOnSpace").grid(Game.rows, Game.cols);
-	var rf = Crafty.e("RandomFlipper").randomFlipper(g);
+	var rf = Crafty.e("RandomFlipper").grid(Game.grid);
+	Crafty.e("Keyboard").bind("KeyDown", function() {
+		if (this.isDown("A")) {
+			rf.destroy();
+		};
+	});
 });
 
 window.onload = function() {
 	Crafty.init(Game.w, Game.h);
 	Crafty.background("#000000");
-	Crafty.e("2D, DOM, Color")
-	.attr({x: 10, y: 10, w: 100, h: 100})
-	.color("#0000ff");
+	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
+	Game.grid.addComponent("ClearOnSpace");
 	Crafty.scene("Main");
 };
