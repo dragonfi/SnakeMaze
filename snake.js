@@ -45,13 +45,13 @@ Crafty.c("Grid", {
 	backgroundColor: "#aaaaaa",
 	init: function() {
 		this.requires("Delay");
+		this.bind("SceneChange", this.clearGrid);
 	},
 	grid: function(rows, cols) {
 		this.rows = rows;
 		this.cols = cols;
 		this.cells = {};
 		this._createCells();
-		this.clearGrid();
 		return this;
 	},
 	at: function(x, y) {
@@ -118,7 +118,7 @@ Crafty.c("RandomFlipper", {
 		var green = Utils.randInt(256);
 		var blue = Utils.randInt(256);
 		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
-		this._grid.colorAt(rgb);
+		this._grid.colorAt(x, y, rgb);
 	},
 	startFlipping: function() {
 		this.delay(this.flipRandomCell, 50, -1);
@@ -128,17 +128,6 @@ Crafty.c("RandomFlipper", {
 	},
 	remove: function() {
 		this.stopFlipping();
-	},
-});
-
-Crafty.c("ClearOnSpace", {
-	init: function() {
-		this.requires("Grid, Keyboard");
-		this.bind("KeyDown", function() {
-			if (this.isDown("SPACE")) {
-				this.clearGrid();
-			};
-		});
 	},
 });
 
@@ -192,11 +181,14 @@ Crafty.c("Snake", {
 		var delta = this._directions[this._dir];
 		return {x: head.x + delta.x, y: head.y + delta.y};
 	},
+	remove: function() {
+		this.stopMoving();
+	},
 });
 
-Crafty.c("PlayerControls", {
+Crafty.c("Controls", {
 	init: function() {
-		this.requires("Snake, Keyboard");
+		this.requires("Keyboard");
 		this.keymap = {};
 		this.bind("KeyDown", this.handleKeyPress);
 	},
@@ -214,12 +206,22 @@ Crafty.c("PlayerControls", {
 
 Crafty.c("Player1Controls", {
 	init: function() {
-		this.requires("PlayerControls");
+		this.requires("Controls, Snake");
 		this.keymap = {
 			"UP_ARROW": this.direction.bind(this, "up"),
 			"DOWN_ARROW": this.direction.bind(this, "down"),
 			"LEFT_ARROW": this.direction.bind(this, "left"),
 			"RIGHT_ARROW": this.direction.bind(this, "right"),
+		};
+	},
+});
+
+Crafty.c("SceneSelectControls", {
+	init: function(){
+		this.requires("Controls");
+		this.keymap = {
+			"SPACE": Crafty.scene.bind(Crafty, "SnakeGame"),
+			"ESC": Crafty.scene.bind(Crafty, "MainMenu"),
 		};
 	},
 });
@@ -235,23 +237,14 @@ Crafty.c("DestroyNoPersist", {
 });
 
 Crafty.scene("MainMenu", function() {
-	var rf = Crafty.e("RandomFlipper").grid(Game.grid);
-	Crafty.e("Keyboard").bind("KeyDown", function() {
-		if (this.isDown("SPACE")) {
-			rf.destroy();
-			Crafty.scene("SnakeGame");
-		};
-	});
+	console.log("main menu");
+	var rf = Crafty.e("RandomFlipper, NoPersist").grid(Game.grid);
 });
 
 Crafty.scene("SnakeGame", function() {
+	console.log("snake game");
 	var snake = Crafty.e("Snake, Player1Controls, NoPersist")
 	.snake(Game.grid, 3, 4, "right", 5);
-	Crafty.e("Keyboard").bind("KeyDown", function() {
-		if (this.isDown("SPACE")) {
-			Crafty.scene("SnakeGame");
-		};
-	});
 });
 
 window.onload = function() {
@@ -259,7 +252,7 @@ window.onload = function() {
 	Crafty.init(Game.w, Game.h);
 	Crafty.background("#000000");
 	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
-	Game.grid.addComponent("ClearOnSpace");
+	Game.grid.addComponent("SceneSelectControls");
 	Game.grid.addComponent("DestroyNoPersist");
 	Crafty.scene("SnakeGame");
 };
