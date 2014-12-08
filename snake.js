@@ -208,7 +208,6 @@ Crafty.c("PlayerControls", {
 		};
 	},
 	direction: function(dir) {
-		console.log(dir);
 		this._dir = dir;
 	},
 });
@@ -222,6 +221,16 @@ Crafty.c("Player1Controls", {
 			"LEFT_ARROW": this.direction.bind(this, "left"),
 			"RIGHT_ARROW": this.direction.bind(this, "right"),
 		};
+	},
+});
+
+Crafty.c("DestroyNoPersist", {
+	init: function() {
+		this.bind("SceneDestroy", function() {
+			Crafty("NoPersist").each(function() {
+				this.destroy();
+			});
+		});
 	},
 });
 
@@ -243,10 +252,6 @@ Crafty.scene("SnakeGame", function() {
 			Crafty.scene("SnakeGame");
 		};
 	});
-}, function() {
-	Crafty("NoPersist").each(function(){
-		this.destroy();
-	});
 });
 
 window.onload = function() {
@@ -255,5 +260,6 @@ window.onload = function() {
 	Crafty.background("#000000");
 	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
 	Game.grid.addComponent("ClearOnSpace");
+	Game.grid.addComponent("DestroyNoPersist");
 	Crafty.scene("SnakeGame");
 };
