@@ -43,6 +43,9 @@ Crafty.c("Cell", {
 
 Crafty.c("Grid", {
 	backgroundColor: "#aaaaaa",
+	init: function() {
+		this.requires("Delay");
+	},
 	grid: function(rows, cols) {
 		this.rows = rows;
 		this.cols = cols;
@@ -55,7 +58,7 @@ Crafty.c("Grid", {
 		return this.cells[this._key(x, y)];
 	},
 	clearGrid: function() {
-		this.trigger("StopFlipping");
+		Crafty.trigger("StopFlipping");
 		var maxDelay = 0;
 		for (var x = 0; x < this.rows; x++) {
 			for (var y = 0; y < this.cols; y++) {
@@ -64,9 +67,9 @@ Crafty.c("Grid", {
 			};
 		};
 		var self = this;
-		Crafty.e("Delay").delay(function(){
-			self.trigger("Ready");
-			self.trigger("StartFlipping");
+		this.delay(function(){
+			Crafty.trigger("Ready");
+			Crafty.trigger("StartFlipping");
 		}, maxDelay + 800, 0);
 	},
 	colorAt: function(x, y, color) {
@@ -88,7 +91,7 @@ Crafty.c("Grid", {
 	_delayedTweenColor: function(x, y) {
 		var delay = 100*x + 100*y;
 		var self = this;
-		Crafty.e("Delay").delay(function() {
+		this.delay(function() {
 			self.resetColorAt(x, y);
 		}, delay, 0);
 		return delay;
@@ -104,8 +107,8 @@ Crafty.c("RandomFlipper", {
 			return this._grid;
 		};
 		this._grid = grid;
-		this._grid.bind("StartFlipping", this.startFlipping.bind(this));
-		this._grid.bind("StopFlipping", this.stopFlipping.bind(this));
+		this.bind("StartFlipping", this.startFlipping);
+		this.bind("StopFlipping", this.stopFlipping);
 		return this;
 	},
 	flipRandomCell: function() {
@@ -115,7 +118,7 @@ Crafty.c("RandomFlipper", {
 		var green = Utils.randInt(256);
 		var blue = Utils.randInt(256);
 		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
-		this._grid.at(x, y).tweenColor(rgb);
+		this._grid.colorAt(rgb);
 	},
 	startFlipping: function() {
 		this.delay(this.flipRandomCell, 50, -1);
@@ -150,8 +153,9 @@ Crafty.c("Snake", {
 		this._segments[0] = {x: x, y: y};
 		this._dir = dir;
 		this._maxLen = maxLen;
-		this._grid.bind("StartFlipping", this.startMoving.bind(this));
+		this.bind("StartFlipping", this.startMoving);
 		this.bind("OutOfBounds", this.stopMoving);
+		return this;
 	},
 	startMoving: function() {
 		var head = this.head();
@@ -194,9 +198,7 @@ Crafty.c("PlayerControls", {
 	init: function() {
 		this.requires("Snake, Keyboard");
 		this.keymap = {};
-		this.bind("KeyDown", function() {
-			this.handleKeyPress();
-		});
+		this.bind("KeyDown", this.handleKeyPress);
 	},
 	handleKeyPress: function() {
 		for (var key in this.keymap) {
@@ -205,7 +207,8 @@ Crafty.c("PlayerControls", {
 			};
 		};
 	},
-	setDirection: function(dir) {
+	direction: function(dir) {
+		console.log(dir);
 		this._dir = dir;
 	},
 });
@@ -214,10 +217,10 @@ Crafty.c("Player1Controls", {
 	init: function() {
 		this.requires("PlayerControls");
 		this.keymap = {
-			"UP_ARROW": this.setDirection.bind(this, "up"),
-			"DOWN_ARROW": this.setDirection.bind(this, "down"),
-			"LEFT_ARROW": this.setDirection.bind(this, "left"),
-			"RIGHT_ARROW": this.setDirection.bind(this, "right"),
+			"UP_ARROW": this.direction.bind(this, "up"),
+			"DOWN_ARROW": this.direction.bind(this, "down"),
+			"LEFT_ARROW": this.direction.bind(this, "left"),
+			"RIGHT_ARROW": this.direction.bind(this, "right"),
 		};
 	},
 });
@@ -233,8 +236,17 @@ Crafty.scene("MainMenu", function() {
 });
 
 Crafty.scene("SnakeGame", function() {
-	var snake = Crafty.e("Snake, Player1Controls")
+	var snake = Crafty.e("Snake, Player1Controls, NoPersist")
 	.snake(Game.grid, 3, 4, "right", 5);
+	Crafty.e("Keyboard").bind("KeyDown", function() {
+		if (this.isDown("SPACE")) {
+			Crafty.scene("SnakeGame");
+		};
+	});
+}, function() {
+	Crafty("NoPersist").each(function(){
+		this.destroy();
+	});
 });
 
 window.onload = function() {
