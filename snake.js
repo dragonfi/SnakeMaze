@@ -156,14 +156,13 @@ Crafty.c("Snake", {
 	startMoving: function() {
 		var head = this.head();
 		this._grid.colorAt(head.x, head.y, this.color);
-		this.delay(this.move, 1000, -1);
+		this.delay(this.move, 400, -1);
 	},
 	stopMoving: function() {
 		this.cancelDelay(this.move);
 	},
 	move: function() {
-		var head = this.head();
-		var new_segment = {x: head.x + 1, y: head.y};
+		var new_segment = this._newSegment();
 		if (this._grid.at(new_segment.x, new_segment.y) === undefined) {
 			this.trigger("OutOfBounds");
 			return;
@@ -178,12 +177,55 @@ Crafty.c("Snake", {
 	head: function() {
 		return this._segments[this._segments.length - 1];
 	},
+	_directions: {
+		"right": {x: 1, y: 0},
+		"left": {x: -1, y: 0},
+		"up": {x: 0, y: -1},
+		"down": {x: 0, y: 1},
+	},
+	_newSegment: function() {
+		var head = this.head();
+		var delta = this._directions[this._dir];
+		return {x: head.x + delta.x, y: head.y + delta.y};
+	},
+});
+
+Crafty.c("PlayerControls", {
+	init: function() {
+		this.requires("Snake, Keyboard");
+		this.keymap = {};
+		this.bind("KeyDown", function() {
+			this.handleKeyPress();
+		});
+	},
+	handleKeyPress: function() {
+		for (var key in this.keymap) {
+			if (this.isDown(key)) {
+				this.keymap[key]();
+			};
+		};
+	},
+	setDirection: function(dir) {
+		this._dir = dir;
+	},
+});
+
+Crafty.c("Player1Controls", {
+	init: function() {
+		this.requires("PlayerControls");
+		this.keymap = {
+			"UP_ARROW": this.setDirection.bind(this, "up"),
+			"DOWN_ARROW": this.setDirection.bind(this, "down"),
+			"LEFT_ARROW": this.setDirection.bind(this, "left"),
+			"RIGHT_ARROW": this.setDirection.bind(this, "right"),
+		};
+	},
 });
 
 Crafty.scene("MainMenu", function() {
 	var rf = Crafty.e("RandomFlipper").grid(Game.grid);
 	Crafty.e("Keyboard").bind("KeyDown", function() {
-		if (this.isDown("A")) {
+		if (this.isDown("SPACE")) {
 			rf.destroy();
 			Crafty.scene("SnakeGame");
 		};
@@ -191,7 +233,8 @@ Crafty.scene("MainMenu", function() {
 });
 
 Crafty.scene("SnakeGame", function() {
-	var snake = Crafty.e("Snake").snake(Game.grid, 3, 4, "right", 5);
+	var snake = Crafty.e("Snake, Player1Controls")
+	.snake(Game.grid, 3, 4, "right", 5);
 });
 
 window.onload = function() {
