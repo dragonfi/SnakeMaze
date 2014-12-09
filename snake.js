@@ -177,11 +177,16 @@ Crafty.c("Snake", {
 			this.trigger("OutOfBounds");
 			return;
 		};
-		if (cell.obj != undefined && cell.obj.has("PointItem")) {
-			this._maxLen += 1;
-			Crafty.trigger("PointItemEaten");
+		if (cell.obj != undefined) {
+			if (cell.obj.has("PointItem")) {
+				this._maxLen += 1;
+				Crafty.trigger("PointItemEaten");
+			} else if (cell.obj.has("Snake")) {
+				console.log("self hit");
+				this.trigger("SelfHit");
+			};
 		};
-		this._grid.colorAt(new_segment.x, new_segment.y, this.color);
+		this._grid.colorAt(new_segment.x, new_segment.y, this.color, this);
 		this._segments.push(new_segment);
 		if (this._segments.length > this._maxLen) {
 			var old = this._segments.shift();
