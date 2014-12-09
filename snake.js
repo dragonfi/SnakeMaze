@@ -38,6 +38,7 @@ Crafty.c("Cell", {
 			this.color(color);
 			this.tween({h: this.tileSize, alpha: 1}, delta);
 		});
+		return this;
 	},
 });
 
@@ -68,15 +69,14 @@ Crafty.c("Grid", {
 		};
 		var self = this;
 		this.delay(function(){
-			Crafty.trigger("Ready");
-			Crafty.trigger("StartFlipping");
+			Crafty.trigger("GridReady");
 		}, maxDelay + 800, 0);
 	},
-	colorAt: function(x, y, color) {
-		this.at(x, y).tweenColor(color);
+	colorAt: function(x, y, color, obj) {
+		this.at(x, y).tweenColor(color).obj = obj;
 	},
 	resetColorAt: function(x, y) {
-		this.at(x, y).tweenColor(this.backgroundColor);
+		this.at(x, y).tweenColor(this.backgroundColor).obj = undefined;
 	},
 	_createCells: function() {
 		for (var x = 0; x < this.rows; x++) {
@@ -107,8 +107,7 @@ Crafty.c("RandomFlipper", {
 			return this._grid;
 		};
 		this._grid = grid;
-		this.bind("StartFlipping", this.startFlipping);
-		this.bind("StopFlipping", this.stopFlipping);
+		this.bind("GridReady", this.startFlipping);
 		return this;
 	},
 	flipRandomCell: function() {
@@ -131,24 +130,41 @@ Crafty.c("RandomFlipper", {
 	},
 });
 
+Crafty.c("PointItem", {
+	color: "#cccc00",
+	pointItem: function(grid) {
+		this._grid = grid;
+		this.bind("GridReady", this.randomPlacement);
+		this.bind("PointItemEaten", this.randomPlacement)
+	},
+	randomPlacement: function() {
+		if (this.x != undefined && this.y != undefined) {
+			this._grid.resetColorAt(this.x, this.y);
+		};
+		this.x = Utils.randInt(this._grid.rows);
+		this.y = Utils.randInt(this._grid.cols);
+		this._grid.colorAt(this.x, this.y, this.color, this);
+	},
+});
+
 Crafty.c("Snake", {
-	color: "#ee0000",
 	init: function() {
 		this.requires("Delay");
 		this._segments = [];
 	},
-	snake: function(grid, x, y, dir, maxLen) {
+	snake: function(grid, x, y, dir, maxLen, color) {
 		this._grid = grid;
 		this._segments[0] = {x: x, y: y};
 		this._dir = dir;
 		this._maxLen = maxLen;
-		this.bind("StartFlipping", this.startMoving);
+		this.color = color;
+		this.bind("GridReady", this.startMoving);
 		this.bind("OutOfBounds", this.stopMoving);
 		return this;
 	},
 	startMoving: function() {
 		var head = this.head();
-		this._grid.colorAt(head.x, head.y, this.color);
+		this._grid.colorAt(head.x, head.y, this.color, this);
 		this.delay(this.move, 400, -1);
 	},
 	stopMoving: function() {
@@ -156,9 +172,14 @@ Crafty.c("Snake", {
 	},
 	move: function() {
 		var new_segment = this._newSegment();
-		if (this._grid.at(new_segment.x, new_segment.y) === undefined) {
+		var cell = this._grid.at(new_segment.x, new_segment.y);
+		if (cell === undefined) {
 			this.trigger("OutOfBounds");
 			return;
+		};
+		if (cell.obj != undefined && cell.obj.has("PointItem")) {
+			this._maxLen += 1;
+			Crafty.trigger("PointItemEaten");
 		};
 		this._grid.colorAt(new_segment.x, new_segment.y, this.color);
 		this._segments.push(new_segment);
@@ -244,7 +265,8 @@ Crafty.scene("MainMenu", function() {
 Crafty.scene("SnakeGame", function() {
 	console.log("snake game");
 	var snake = Crafty.e("Snake, Player1Controls, NoPersist")
-	.snake(Game.grid, 3, 4, "right", 5);
+	.snake(Game.grid, 3, 4, "right", 5, "#00cc00");
+	var pointItem = Crafty.e("PointItem").pointItem(Game.grid);
 });
 
 window.onload = function() {
