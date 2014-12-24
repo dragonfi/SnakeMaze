@@ -7,7 +7,7 @@ var Game = {
 
 Game.offset = Game.tileSize + Game.borderSize;
 Game.w = Game.rows * Game.offset + Game.borderSize;
-Game.h = Game.cols * Game.offset + Game.borderSize;
+Game.h = (Game.cols + 1) * Game.offset + Game.borderSize;
 
 var Utils = {
 	randInt: function(n){
@@ -160,6 +160,7 @@ Crafty.c("Snake", {
 		this.color = color;
 		this.bind("GridReady", this.startMoving);
 		this.bind("OutOfBounds", this.stopMoving);
+		this.bind("SelfHit", this.stopMoving);
 		return this;
 	},
 	startMoving: function() {
@@ -169,6 +170,7 @@ Crafty.c("Snake", {
 	},
 	stopMoving: function() {
 		this.cancelDelay(this.move);
+		Crafty.trigger("GameOver");
 	},
 	move: function() {
 		var new_segment = this._newSegment();
@@ -182,7 +184,6 @@ Crafty.c("Snake", {
 				this._maxLen += 1;
 				Crafty.trigger("PointItemEaten");
 			} else if (cell.obj.has("Snake")) {
-				console.log("self hit");
 				this.trigger("SelfHit");
 			};
 		};
@@ -262,6 +263,57 @@ Crafty.c("DestroyNoPersist", {
 	},
 });
 
+Crafty.c("Score", {
+	init: function() {
+		this._prefix = "Score:";
+		this._score = 0;
+		this._gameIsOver = false;
+		var _dimensions = {
+			x: Game.borderSize,
+			y: Game.h - Game.offset,
+			w: Game.w - Game.borderSize * 2,
+			h: Game.tileSize,
+		};
+		this._cell = Crafty.e("2D, DOM, Color, Persist")
+		.color("#aaaaaa")
+		.attr(_dimensions);
+		this.requires("2D, DOM, Text, Persist")
+		.textFont({size: "" + Game.tileSize + "px"})
+		.textColor("#ffffff")
+		.attr(_dimensions)
+		.reset();
+		this.bind("PointItemEaten", this.increment);
+		this.bind("ScoreChanged", this.updateText);
+		this.bind("GridReady", this.reset);
+		this.bind("GameOver", this.gameOver);
+	},
+	reset: function() {
+		this._gameIsOver = false;
+		this._score = 0;
+		this.trigger("ScoreChanged");
+	},
+	gameOver: function() {
+		this._gameIsOver = true;
+		this.trigger("ScoreChanged");
+	},
+	updateText: function() {
+		var postfix = "";
+		if (this._gameIsOver) {
+			postfix += " - Game Over"
+		};
+		this.text(this._prefix + this._score + postfix);
+		return this;
+	},
+	increment: function(number) {
+		if (number === undefined) {
+			number = 1;
+		};
+		this._score += number;
+		this.trigger("ScoreChanged");
+		return this;
+	},
+});
+
 Crafty.scene("MainMenu", function() {
 	console.log("main menu");
 	var rf = Crafty.e("RandomFlipper, NoPersist").grid(Game.grid);
@@ -271,7 +323,6 @@ Crafty.scene("SnakeGame", function() {
 	console.log("snake game");
 	var snake = Crafty.e("Snake, Player1Controls, NoPersist")
 	.snake(Game.grid, 3, 4, "right", 5, "#00cc00");
-	var pointItem = Crafty.e("PointItem").pointItem(Game.grid);
 });
 
 window.onload = function() {
@@ -281,5 +332,7 @@ window.onload = function() {
 	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
 	Game.grid.addComponent("SceneSelectControls");
 	Game.grid.addComponent("DestroyNoPersist");
+	Game.pointItem = Crafty.e("PointItem").pointItem(Game.grid);
+	Game.score = Crafty.e("Score");
 	Crafty.scene("SnakeGame");
 };
