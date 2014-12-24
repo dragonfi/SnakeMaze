@@ -32,6 +32,7 @@ Crafty.c("Cell", {
 		return this;
 	},
 	tweenColor: function(color) {
+		Crafty.trigger("CellFlip");
 		var _this = this;
 		var delta = 400;
 		this.tween({h: 0, alpha: 0}, delta)
@@ -194,6 +195,7 @@ Crafty.c("Snake", {
 			var old = this._segments.shift();
 			this._grid.resetColorAt(old.x, old.y);
 		};
+		Crafty.trigger("SnakeMoved");
 	},
 	head: function() {
 		return this._segments[this._segments.length - 1];
@@ -319,6 +321,20 @@ Crafty.c("Score", {
 	},
 });
 
+Crafty.scene("SetUp", function() {
+	console.log("setup");
+	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
+	Game.grid.addComponent("SceneSelectControls");
+	Game.grid.addComponent("DestroyNoPersist");
+	Game.pointItem = Crafty.e("PointItem").pointItem(Game.grid);
+	Game.score = Crafty.e("Score");
+
+	Crafty.bind("GameOver", function(){Crafty.audio.play("bloop");});
+	Crafty.bind("SnakeMoved", function(){Crafty.audio.play("blip");});
+	Crafty.bind("PointItemEaten", function(){Crafty.audio.play("tik")});
+	Crafty.scene("SnakeGame");
+});
+
 Crafty.scene("MainMenu", function() {
 	console.log("main menu");
 	var rf = Crafty.e("RandomFlipper, NoPersist").grid(Game.grid);
@@ -334,10 +350,14 @@ window.onload = function() {
 	console.log("Starting Snake Beat...");
 	Crafty.init(Game.w, Game.h);
 	Crafty.background("#000000");
-	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
-	Game.grid.addComponent("SceneSelectControls");
-	Game.grid.addComponent("DestroyNoPersist");
-	Game.pointItem = Crafty.e("PointItem").pointItem(Game.grid);
-	Game.score = Crafty.e("Score");
-	Crafty.scene("SnakeGame");
+	Crafty.paths({"audio": "assets/", "images": "assets/"});
+	Crafty.load({
+		"audio": {
+			"blip": ["blip.wav"],
+			"tik": ["tik.wav"],
+			"bloop": ["bloop.wav"],
+		},
+	}, function() {
+		Crafty.scene("SetUp");
+	});
 };
