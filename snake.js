@@ -3,6 +3,7 @@ var Game = {
 	cols: 9,
 	tileSize: 20,
 	borderSize: 5,
+	backgroundColor: "#aaaaaa",
 }
 
 Game.offset = Game.tileSize + Game.borderSize;
@@ -43,7 +44,7 @@ Crafty.c("Cell", {
 });
 
 Crafty.c("Grid", {
-	backgroundColor: "#aaaaaa",
+	backgroundColor: Game.backgroundColor,
 	init: function() {
 		this.requires("Delay");
 		this.bind("SceneChange", this.clearGrid);
@@ -275,12 +276,16 @@ Crafty.c("Score", {
 			h: Game.tileSize,
 		};
 		this._cell = Crafty.e("2D, DOM, Color, Persist")
-		.color("#aaaaaa")
+		.color(Game.backgroundColor)
 		.attr(_dimensions);
 		this.requires("2D, DOM, Text, Persist")
-		.textFont({size: "" + Game.tileSize + "px"})
+		.textFont({
+			size: "" + Game.tileSize + "px",
+			family: "Orbitron",
+		})
 		.textColor("#ffffff")
 		.attr(_dimensions)
+		.attr({y: this.y + 2, h: this.h - 2})
 		.reset();
 		this.bind("PointItemEaten", this.increment);
 		this.bind("ScoreChanged", this.updateText);
