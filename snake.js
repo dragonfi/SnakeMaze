@@ -1,6 +1,6 @@
 var Game = {
-	rows: 16,
-	cols: 9,
+	rows: 32,
+	cols: 17,
 	tileSize: 20,
 	borderSize: 5,
 	backgroundColor: "#aaaaaa",

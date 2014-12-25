@@ -4,7 +4,12 @@ Snake On a Slow Display
 Can you keep up with the speed? The display sure doesn't.
 Check out how fast you can go!
 
-Controls: Arrow keys, SPACE, ESC for something extra.
+Controls
+--------
+
+* Move with the ARROW KEYS,
+* SPACE to restart the game,
+* ESC for something extra.
 
 Licence
 -------
