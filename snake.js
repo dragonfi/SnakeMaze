@@ -158,6 +158,7 @@ Crafty.c("Snake", {
 		this._grid = grid;
 		this._segments[0] = {x: x, y: y};
 		this._dir = dir;
+		this._lastMoveDirection = this._dir;
 		this._maxLen = maxLen;
 		this.color = color;
 		this.bind("GridReady", this.startMoving);
@@ -206,7 +207,18 @@ Crafty.c("Snake", {
 		"up": {x: 0, y: -1},
 		"down": {x: 0, y: 1},
 	},
+	_resetDirectionIfItPointsBackwards: function() {
+		var opposites = {
+			"left": "right", "right": "left",
+			"up": "down", "down": "up",
+		};
+		if (opposites[this._dir] === this._lastMoveDirection) {
+			this._dir = this._lastMoveDirection;
+		};
+		this._lastMoveDirection = this._dir;
+	},
 	_newSegment: function() {
+		this._resetDirectionIfItPointsBackwards();
 		var head = this.head();
 		var delta = this._directions[this._dir];
 		return {x: head.x + delta.x, y: head.y + delta.y};
