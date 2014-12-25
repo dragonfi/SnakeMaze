@@ -24,7 +24,7 @@ Crafty.c("Cell", {
 	borderSize: Game.borderSize,
 	offset: Game.tileSize + Game.borderSize,
 	init: function() {
-		this.requires("2D, DOM, Color, Tween, Persist");
+		this.requires("2D, Canvas, Color, Tween, Persist");
 		this.attr({w: this.tileSize, h: this.tileSize});
 	},
 	at: function(x, y) {
@@ -315,12 +315,12 @@ Crafty.c("Score", {
 		.attr(_dimensions);
 		this.requires("2D, DOM, Text, Persist")
 		.textFont({
-			size: "" + Game.tileSize + "px",
+			size: "" + Game.tileSize - 4 + "px",
 			family: "Orbitron",
 		})
 		.textColor("#ffffff")
 		.attr(_dimensions)
-		.attr({y: this.y + 2, h: this.h - 2})
+		.attr({x: this.x + 3, y: this.y + 3, h: this.h - 3})
 		.reset();
 		this.bind("PointItemEaten", this.increment);
 		this.bind("ScoreChanged", this.updateText);
