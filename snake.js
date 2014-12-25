@@ -320,7 +320,7 @@ Crafty.c("Score", {
 		})
 		.textColor("#ffffff")
 		.attr(_dimensions)
-		.attr({x: this.x + 3, y: this.y + 3, h: this.h - 3})
+		.attr({x: this.x + 2, y: this.y + 2, h: this.h - 3})
 		.reset();
 		this.bind("PointItemEaten", this.increment);
 		this.bind("ScoreChanged", this.updateText);
