@@ -173,16 +173,23 @@ Crafty.c("Snake", {
 		this._dir = dir;
 		this._lastMoveDirection = this._dir;
 		this._maxLen = maxLen;
+		this._speedFactor = 2000;
 		this.color = color;
 		this.bind("GridReady", this.startMoving);
 		this.bind("OutOfBounds", this.stopMoving);
 		this.bind("SelfHit", this.stopMoving);
 		return this;
 	},
+	_recalculateMoveDelay: function() {
+		this.cancelDelay(this.move);
+		var delta = this._speedFactor / this._maxLen;
+		Crafty.trigger("SpeedChanged", 1000 / delta);
+		this.delay(this.move, delta, -1);
+	},
 	startMoving: function() {
 		var head = this.head();
 		this._grid.colorAt(head.x, head.y, this.color, this);
-		this.delay(this.move, 400, -1);
+		this._recalculateMoveDelay();
 	},
 	stopMoving: function() {
 		this.cancelDelay(this.move);
@@ -198,6 +205,7 @@ Crafty.c("Snake", {
 		if (cell.obj != undefined) {
 			if (cell.obj.has("PointItem")) {
 				this._maxLen += 1;
+				this._recalculateMoveDelay();
 				Crafty.trigger("PointItemEaten");
 			} else if (cell.obj.has("Snake")) {
 				this.trigger("SelfHit");
@@ -293,8 +301,8 @@ Crafty.c("DestroyNoPersist", {
 
 Crafty.c("Score", {
 	init: function() {
-		this._prefix = "Score:";
 		this._score = 0;
+		this._speed = NaN;
 		this._gameIsOver = false;
 		var _dimensions = {
 			x: Game.borderSize,
@@ -316,6 +324,7 @@ Crafty.c("Score", {
 		.reset();
 		this.bind("PointItemEaten", this.increment);
 		this.bind("ScoreChanged", this.updateText);
+		this.bind("SpeedChanged", this.updateSpeed);
 		this.bind("GridReady", this.reset);
 		this.bind("GameOver", this.gameOver);
 	},
@@ -328,12 +337,17 @@ Crafty.c("Score", {
 		this._gameIsOver = true;
 		this.trigger("ScoreChanged");
 	},
+	updateSpeed: function(new_speed) {
+		this._speed = new_speed;
+		this.trigger("ScoreChanged");
+	},
 	updateText: function() {
+		var prefix = " Speed: ";
 		var postfix = "";
 		if (this._gameIsOver) {
 			postfix += " - Game Over"
 		};
-		this.text(this._prefix + this._score + postfix);
+		this.text(prefix + this._speed.toFixed(2) + postfix);
 		return this;
 	},
 	increment: function(number) {
