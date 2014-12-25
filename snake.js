@@ -14,6 +14,9 @@ var Utils = {
 	randInt: function(n){
 		return Math.floor(Math.random() * n);
 	},
+	randomChoice: function(seq) {
+		return seq[Utils.randInt(seq.length)];
+	},
 }
 
 Crafty.c("Cell", {
@@ -58,7 +61,11 @@ Crafty.c("Grid", {
 		return this;
 	},
 	at: function(x, y) {
-		return this.cells[this._key(x, y)];
+		var key = this._key(x, y);
+		if (y === undefined) {
+			key = x;
+		};
+		return this.cells[key];
 	},
 	clearGrid: function() {
 		Crafty.trigger("StopFlipping");
@@ -73,6 +80,9 @@ Crafty.c("Grid", {
 		this.delay(function(){
 			Crafty.trigger("GridReady");
 		}, maxDelay + 800, 0);
+	},
+	getKeys: function() {
+		return Object.keys(this.cells);
 	},
 	colorAt: function(x, y, color, obj) {
 		this.at(x, y).tweenColor(color).obj = obj;
@@ -140,12 +150,15 @@ Crafty.c("PointItem", {
 		this.bind("PointItemEaten", this.randomPlacement)
 	},
 	randomPlacement: function() {
-		if (this.x != undefined && this.y != undefined) {
-			this._grid.resetColorAt(this.x, this.y);
+		if (this._key != undefined) {
+			this._grid.resetColorAt(this._key);
 		};
-		this.x = Utils.randInt(this._grid.rows);
-		this.y = Utils.randInt(this._grid.cols);
-		this._grid.colorAt(this.x, this.y, this.color, this);
+		var self = this;
+		var validPositions = this._grid.getKeys().filter(function(key){
+			return self._grid.at(key).obj === undefined;
+		});
+		this._key = Utils.randomChoice(validPositions);
+		this._grid.colorAt(this._key, undefined, this.color, this);
 	},
 });
 
