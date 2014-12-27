@@ -1,6 +1,6 @@
 var Game = {
 	rows: 23,
-	cols: 15,
+	cols: 12,
 	tileSize: 20,
 	borderSize: 5,
 	backgroundColor: "#aaaaaa",
@@ -150,14 +150,22 @@ Crafty.c("PointItem", {
 		this.bind("PointItemEaten", this.randomPlacement)
 	},
 	randomPlacement: function() {
-		if (this._key != undefined) {
-			this._grid.resetColorAt(this._key);
+		if (this.nextPosition !== undefined) {
+			this.warpTo(this.nextPosition);
+			this.nextPosition = undefined;
+			return;
 		};
 		var self = this;
 		var validPositions = this._grid.getKeys().filter(function(key){
 			return self._grid.at(key).obj === undefined;
 		});
-		this._key = Utils.randomChoice(validPositions);
+		this.warpTo(Utils.randomChoice(validPositions));
+	},
+	warpTo: function(key) {
+		if (this._key != undefined) {
+			this._grid.resetColorAt(this._key);
+		};
+		this._key = key;
 		this._grid.colorAt(this._key, undefined, this.color, this);
 	},
 });
@@ -354,7 +362,7 @@ Crafty.c("Score", {
 		var prefix = " Speed: ";
 		var postfix = "";
 		if (this._gameIsOver) {
-			postfix += " - Game Over"
+			postfix += " - Game Over - Press SPACE to restart"
 		};
 		this.text(prefix + this._speed.toFixed(2) + postfix);
 		return this;
@@ -392,6 +400,7 @@ Crafty.scene("SnakeGame", function() {
 	console.log("snake game");
 	var snake = Crafty.e("Snake, Player1Controls, NoPersist")
 	.snake(Game.grid, 3, 4, "right", 5, "#00cc00");
+	Crafty("PointItem").nextPosition = "10, 4";
 });
 
 window.onload = function() {
