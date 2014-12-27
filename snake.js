@@ -383,17 +383,15 @@ Crafty.c("Kongregate", {
 		this.bind("SecretFound", this.secretFound);
 	},
 	updateSpeed: function(new_speed) {
-		console.log("highest speed:", new_speed);
 		kongregate.stats.submit("HighestSpeed", new_speed * 1000);
 	},
 	secretFound: function() {
-		console.log("secret found");
 		kongregate.stats.submit("SecretFound", 1);
 	},
 });
 
 Crafty.scene("SetUp", function() {
-	console.log("setup");
+	console.log("SetUp");
 	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
 	Game.grid.addComponent("SceneSelectControls");
 	Game.grid.addComponent("DestroyNoPersist");
@@ -406,14 +404,14 @@ Crafty.scene("SetUp", function() {
 	Crafty.scene("SnakeGame");
 });
 
-Crafty.scene("SecretDemo ", function() {
-	console.log("secret demo");
+Crafty.scene("SecretDemo", function() {
+	console.log("SecretDemo");
 	Crafty.trigger("SecretFound");
 	var rf = Crafty.e("RandomFlipper, NoPersist").grid(Game.grid);
 });
 
 Crafty.scene("SnakeGame", function() {
-	console.log("snake game");
+	console.log("SnakeGame");
 	var snake = Crafty.e("Snake, Player1Controls, NoPersist")
 	.snake(Game.grid, 3, 4, "right", 5, "#00cc00");
 	Crafty("PointItem").nextPosition = "10, 4";
@@ -421,12 +419,12 @@ Crafty.scene("SnakeGame", function() {
 
 var kongregate;
 window.onload = function() {
-	console.log("Starting Snake Beat...");
+	console.log("Starting Snake On A Slow Display...");
 	Crafty.init(Game.w, Game.h);
 	kongregateAPI.loadAPI(function() {
 		kongregate = kongregateAPI.getAPI();
-		console.log("got kongregate api:", kongregate);
-		Crafty.c("Kongregate");
+		console.log("Got kongregate api:", kongregate);
+		Crafty.e("Kongregate");
 	});
 
 	Crafty.background("#000000");
