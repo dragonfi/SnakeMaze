@@ -377,12 +377,29 @@ Crafty.c("Score", {
 	},
 });
 
+Crafty.c("Kongregate", {
+	init: function() {
+		kongregateAPI.loadAPI(function() {
+			this.kongregate = kongregateAPI.getAPI();
+			this.bind("SpeedChanged", this.updateSpeed);
+			this.bind("SecretFound", this.secretFound);
+		});
+	},
+	updateSpeed: function(new_speed) {
+		this.kongregate.stats.submit("HighestSpeed", new_speed * 1000);
+	},
+	secretFound: function() {
+		this.kongregate.stats.submit("SecretFound", 1);
+	},
+});
+
 Crafty.scene("SetUp", function() {
 	console.log("setup");
 	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
 	Game.grid.addComponent("SceneSelectControls");
 	Game.grid.addComponent("DestroyNoPersist");
 	Game.pointItem = Crafty.e("PointItem").pointItem(Game.grid);
+	Game.kongregate = Crafty.e("Kongregate");
 	Game.score = Crafty.e("Score");
 
 	Crafty.bind("GameOver", function(){Crafty.audio.play("bloop");});
@@ -393,6 +410,7 @@ Crafty.scene("SetUp", function() {
 
 Crafty.scene("MainMenu", function() {
 	console.log("main menu");
+	Crafty.trigger("SecretFound");
 	var rf = Crafty.e("RandomFlipper, NoPersist").grid(Game.grid);
 });
 
