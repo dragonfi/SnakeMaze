@@ -301,7 +301,7 @@ Crafty.c("SceneSelectControls", {
 		this.requires("Controls");
 		this.keymap = {
 			"SPACE": Crafty.scene.bind(Crafty, "SnakeGame"),
-			"ESC": Crafty.scene.bind(Crafty, "MainMenu"),
+			"ESC": Crafty.scene.bind(Crafty, "SecretDemo"),
 		};
 	},
 });
@@ -379,17 +379,16 @@ Crafty.c("Score", {
 
 Crafty.c("Kongregate", {
 	init: function() {
-		kongregateAPI.loadAPI(function() {
-			this.kongregate = kongregateAPI.getAPI();
-			this.bind("SpeedChanged", this.updateSpeed);
-			this.bind("SecretFound", this.secretFound);
-		});
+		this.bind("SpeedChanged", this.updateSpeed);
+		this.bind("SecretFound", this.secretFound);
 	},
 	updateSpeed: function(new_speed) {
-		this.kongregate.stats.submit("HighestSpeed", new_speed * 1000);
+		console.log("highest speed:", new_speed);
+		kongregate.stats.submit("HighestSpeed", new_speed * 1000);
 	},
 	secretFound: function() {
-		this.kongregate.stats.submit("SecretFound", 1);
+		console.log("secret found");
+		kongregate.stats.submit("SecretFound", 1);
 	},
 });
 
@@ -399,7 +398,6 @@ Crafty.scene("SetUp", function() {
 	Game.grid.addComponent("SceneSelectControls");
 	Game.grid.addComponent("DestroyNoPersist");
 	Game.pointItem = Crafty.e("PointItem").pointItem(Game.grid);
-	Game.kongregate = Crafty.e("Kongregate");
 	Game.score = Crafty.e("Score");
 
 	Crafty.bind("GameOver", function(){Crafty.audio.play("bloop");});
@@ -408,8 +406,8 @@ Crafty.scene("SetUp", function() {
 	Crafty.scene("SnakeGame");
 });
 
-Crafty.scene("MainMenu", function() {
-	console.log("main menu");
+Crafty.scene("SecretDemo ", function() {
+	console.log("secret demo");
 	Crafty.trigger("SecretFound");
 	var rf = Crafty.e("RandomFlipper, NoPersist").grid(Game.grid);
 });
@@ -421,9 +419,16 @@ Crafty.scene("SnakeGame", function() {
 	Crafty("PointItem").nextPosition = "10, 4";
 });
 
+var kongregate;
 window.onload = function() {
 	console.log("Starting Snake Beat...");
 	Crafty.init(Game.w, Game.h);
+	kongregateAPI.loadAPI(function() {
+		kongregate = kongregateAPI.getAPI();
+		console.log("got kongregate api:", kongregate);
+		Crafty.c("Kongregate");
+	});
+
 	Crafty.background("#000000");
 	Crafty.paths({"audio": "assets/", "images": "assets/"});
 	Crafty.load({
