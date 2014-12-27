@@ -1,6 +1,6 @@
 var Game = {
-	rows: 32,
-	cols: 17,
+	rows: 23,
+	cols: 15,
 	tileSize: 20,
 	borderSize: 5,
 	backgroundColor: "#aaaaaa",
@@ -275,6 +275,15 @@ Crafty.c("Player1Controls", {
 			"DOWN_ARROW": this.direction.bind(this, "down"),
 			"LEFT_ARROW": this.direction.bind(this, "left"),
 			"RIGHT_ARROW": this.direction.bind(this, "right"),
+			"W": this.direction.bind(this, "up"),
+			"S": this.direction.bind(this, "down"),
+			"A": this.direction.bind(this, "left"),
+			"D": this.direction.bind(this, "right"),
+			"NUMPAD_8": this.direction.bind(this, "up"),
+			"NUMPAD_5": this.direction.bind(this, "down"),
+			"NUMPAD_4": this.direction.bind(this, "left"),
+			"NUMPAD_6": this.direction.bind(this, "right"),
+			"NUMPAD_2": this.direction.bind(this, "down"),
 		};
 	},
 });
