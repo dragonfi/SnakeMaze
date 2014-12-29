@@ -1,3 +1,7 @@
+// Requires: crafty.js
+// Requires: utils.js
+// Requires: kongregate.js
+
 var Game = {
 	rows: 23,
 	cols: 12,
@@ -9,15 +13,6 @@ var Game = {
 Game.offset = Game.tileSize + Game.borderSize;
 Game.w = Game.rows * Game.offset + Game.borderSize;
 Game.h = (Game.cols + 1) * Game.offset + Game.borderSize;
-
-var Utils = {
-	randInt: function(n){
-		return Math.floor(Math.random() * n);
-	},
-	randomChoice: function(seq) {
-		return seq[Utils.randInt(seq.length)];
-	},
-}
 
 Crafty.c("Cell", {
 	tileSize: Game.tileSize,
@@ -191,7 +186,7 @@ Crafty.c("Snake", {
 	_recalculateMoveDelay: function() {
 		this.cancelDelay(this.move);
 		var delta = this._speedFactor / this._maxLen;
-		Crafty.trigger("SpeedChanged", 1000 / delta);
+		Crafty.trigger("SpeedChanged", 1000000 / delta);
 		this.delay(this.move, delta, -1);
 	},
 	startMoving: function() {
@@ -377,19 +372,6 @@ Crafty.c("Score", {
 	},
 });
 
-Crafty.c("Kongregate", {
-	init: function() {
-		this.bind("SpeedChanged", this.updateSpeed);
-		this.bind("SecretFound", this.secretFound);
-	},
-	updateSpeed: function(new_speed) {
-		kongregate.stats.submit("HighestSpeed", new_speed * 1000);
-	},
-	secretFound: function() {
-		kongregate.stats.submit("SecretFound", 1);
-	},
-});
-
 Crafty.scene("SetUp", function() {
 	console.log("SetUp");
 	Game.grid = Crafty.e("Grid").grid(Game.rows, Game.cols);
@@ -402,6 +384,10 @@ Crafty.scene("SetUp", function() {
 	Crafty.bind("SnakeMoved", function(){Crafty.audio.play("blip");});
 	Crafty.bind("PointItemEaten", function(){Crafty.audio.play("tik")});
 	Crafty.scene("SnakeGame");
+
+	var k = Crafty("Kongregate");
+	k.bindStat("SpeedChanged", "HighestSpeed");
+	k.bindStat("SecretFound");
 });
 
 Crafty.scene("SecretDemo", function() {
@@ -417,16 +403,10 @@ Crafty.scene("SnakeGame", function() {
 	Crafty("PointItem").nextPosition = "10, 4";
 });
 
-var kongregate;
 window.onload = function() {
 	console.log("Starting Snake On A Slow Display...");
 	Crafty.init(Game.w, Game.h);
-	kongregateAPI.loadAPI(function() {
-		kongregate = kongregateAPI.getAPI();
-		console.log("Got kongregate api:", kongregate);
-		Crafty.e("Kongregate");
-	});
-
+	Kongregate.init();
 	Crafty.background("#000000");
 	Crafty.paths({"audio": "assets/", "images": "assets/"});
 	Crafty.load({
