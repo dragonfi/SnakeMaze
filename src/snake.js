@@ -118,11 +118,11 @@ Crafty.c("RandomFlipper", {
 		return this;
 	},
 	flipRandomCell: function() {
-		var x = Utils.randInt(this._grid.rows);
-		var y = Utils.randInt(this._grid.cols);
-		var red = Utils.randInt(256);
-		var green = Utils.randInt(256);
-		var blue = Utils.randInt(256);
+		var x = Utils.rand.int(this._grid.rows);
+		var y = Utils.rand.int(this._grid.cols);
+		var red = Utils.rand.int(256);
+		var green = Utils.rand.int(256);
+		var blue = Utils.rand.int(256);
 		var rgb = "rgb(" + red + "," + green + "," + blue + ")";
 		this._grid.colorAt(x, y, rgb);
 	},
@@ -154,7 +154,7 @@ Crafty.c("PointItem", {
 		var validPositions = this._grid.getKeys().filter(function(key){
 			return self._grid.at(key).obj === undefined;
 		});
-		this.warpTo(Utils.randomChoice(validPositions));
+		this.warpTo(Utils.rand.choice(validPositions));
 	},
 	warpTo: function(key) {
 		if (this._key != undefined) {
