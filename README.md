@@ -21,3 +21,10 @@ without my permission.
 
 It's also possible to change my mind on this, so,
 don't hesitate to start a discussion on the topic.
+
+Todo
+----
+
+* Beginning of snake is hard to see
+* Need more levels, maybe achievements
+* 2 player game
