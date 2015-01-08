@@ -15,14 +15,34 @@ Game.w = Game.cols * Game.offset + Game.borderSize;
 Game.h = Game.rows * Game.offset + Game.borderSize;
 
 Crafty.c("Cell", {
-	allCells: {},
+	allCells: (function() {
+		var allCells = [];
+		for (var col = 0; col < Game.cols; col++) {
+			allCells[col] = [];
+			for (var row = 0; row < Game.rows; row++) {
+				allCells[col][row] = [];
+			};
+		};
+		return allCells;
+	})(),
 	init: function() {
 		this.requires("2D, Canvas, Color, Tween, Delay");
+	},
+	emptyCells: function() {
+		var emptyCells = [];
+		for (var col in this.allCells) {
+			for (var row in this.allCells[col]) {
+				if (this.allCells[col][row].length === 0) {
+					emptyCells.push({col: col, row: row});
+				};
+			};
+		};
+		return emptyCells;
 	},
 	cell: function(col, row, parent) {
 		this.col = col;
 		this.row = row;
-		this._addToAllCells();
+		this.allCells[col][row].push(this);
 		this.parent = parent;
 		this._orig_attrs = {
 			x: this.col * Game.offset + Game.borderSize,
@@ -48,23 +68,10 @@ Crafty.c("Cell", {
 		}, Game.cellDelay);
 	},
 	remove: function() {
-		this._removeFromAllCells();
-	},
-	_key: function() {
-		return this.col + "," + this.row;
-	},
-	_addToAllCells: function() {
-		var key = this._key();
-		if (this.allCells[key] === undefined) {
-			this.allCells[key] = [];
-		};
-		this.allCells[key].push(this);
-	},
-	_removeFromAllCells: function() {
-		var key = this._key();
-		var index = this.allCells[key].indexOf(this);
+		var localList = this.allCells[this.col][this.row];
+		var index = localList.indexOf(this);
 		if (index !== -1) {
-			this.allCells[key].splice(index, 1);
+			localList.splice(index, 1);
 		};
 	},
 });
@@ -74,7 +81,7 @@ Crafty.c("CellWithCollision", {
 		this.requires("Cell");
 	},
 	checkHits: function() {
-		var cellsAtSameCoords = this.allCells[this._key()];
+		var cellsAtSameCoords = this.allCells[this.col][this.row];
 		if (cellsAtSameCoords.length > 1) {
 			var otherCells = cellsAtSameCoords.filter(this._differs);
 			var otherObjs = otherCells.map(function(cell) {
@@ -99,8 +106,8 @@ Crafty.c("Grid", {
 		cell.checkHits();
 	},
 	clearCells: function() {
-		for (var index in cells) {
-			cells[index].clear();
+		for (var index in this.cells) {
+			this.cells[index].clear();
 		};
 		this.cells = [];
 	},
@@ -123,6 +130,15 @@ Crafty.c("PointItem", {
 		return this;
 	},
 	randomMove: function() {
+		this.clearCells();
+		var coords = Utils.rand.choice(Crafty.e("Cell").emptyCells());
+		if (coords === undefined) {
+			Crafty.trigger("GameOver", "no free cells left");
+			return;
+		};
+		this.col = coords.col;
+		this.row = coords.row;
+		this.createCell(this.col, this.row, this);
 	},
 });
 
