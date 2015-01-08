@@ -27,6 +27,7 @@ Crafty.c("Cell", {
 	})(),
 	init: function() {
 		this.requires("2D, Canvas, Color, Tween, Delay");
+		this.bind("ClearGame", this.clear);
 	},
 	emptyCells: function() {
 		var emptyCells = [];
@@ -40,6 +41,7 @@ Crafty.c("Cell", {
 		return emptyCells;
 	},
 	cell: function(col, row, parent) {
+		this.hasInit = true;
 		this.col = col;
 		this.row = row;
 		this.allCells[col][row].push(this);
@@ -68,6 +70,9 @@ Crafty.c("Cell", {
 		}, Game.cellDelay);
 	},
 	remove: function() {
+		if (!this.hasInit) {
+			return;
+		};
 		var localList = this.allCells[this.col][this.row];
 		var index = localList.indexOf(this);
 		if (index !== -1) {
@@ -83,15 +88,15 @@ Crafty.c("CellWithCollision", {
 	checkHits: function() {
 		var cellsAtSameCoords = this.allCells[this.col][this.row];
 		if (cellsAtSameCoords.length > 1) {
-			var otherCells = cellsAtSameCoords.filter(this._differs);
+			var self = this;
+			var otherCells = cellsAtSameCoords.filter(function(other) {
+				return self !== other;
+			});
 			var otherObjs = otherCells.map(function(cell) {
 				return cell.parent;
 			});
 			this.parent.trigger("OnHit", otherObjs);
 		};
-	},
-	_differs: function(other) {
-		return this !== other;
 	},
 });
 
@@ -173,6 +178,7 @@ Crafty.c("Snake", {
 		this.requires("Grid");
 		this.segments = [];
 		this.bind("OnHit", this.handleCollisions);
+		this.bind("ClearGame", this.stopMovement);
 	},
 	snake: function(col, row, dir, len, color) {
 		this.attr({
@@ -184,8 +190,15 @@ Crafty.c("Snake", {
 			maxLength: len,
 		});
 		this._addSegment(this.col, this.row);
-		this.delay(this.moveSnake, 200, -1);
+		this.startMovement();
 		return this;
+	},
+	startMovement: function() {
+		this.delay(this.moveSnake, 200, -1);
+	},
+	stopMovement: function() {
+		this.cancelDelay(this.moveSnake);
+		Crafty.trigger("SnakeStopped", this);
 	},
 	handleCollisions: function(objs) {
 		for (var index in objs) {
@@ -196,9 +209,8 @@ Crafty.c("Snake", {
 		if (obj.has("PointItem")) {
 			this.maxLength += 1;
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
-		} else if (obj.has("BorderWalls")) {
-			this.cancelDelay(this.moveSnake);
-			Crafty.trigger("SnakeStopped", {snake: this});
+		} else if (obj.has("BorderWalls") || obj.has("Snake")) {
+			this.stopMovement();
 		};
 	},
 	_addSegment: function(col, row) {
@@ -263,8 +275,24 @@ Crafty.c("Player1", {
 	},
 });
 
+Crafty.c("RestartOnSpace", {
+	init: function() {
+		this.requires("Controls, Delay");
+		this.keymap = {
+			"SPACE": this.changeToScene.bind(this, "SnakeGame"),
+		};
+	},
+	changeToScene: function(name) {
+		Crafty.trigger("ClearGame");
+		this.delay(function() {
+			Crafty.scene(name);
+		}, Game.cellDelay);
+	},
+});
+
 Crafty.scene("SetUp", function() {
 	console.log("SetUp");
+	Crafty.e("RestartOnSpace");
 	Crafty.e("Delay").delay(function() {
 		Crafty.scene("SnakeGame");
 	}, 1000);
@@ -275,9 +303,6 @@ Crafty.scene("SnakeGame", function() {
 	var wall = Crafty.e("BorderWalls");
 	var pi = Crafty.e("PointItem").pointItem(5, 4);
 	var p1 = Crafty.e("Player1").snake(3, 4, "right", 5, "#00ff00");
-	Crafty.bind("PointItemEaten", function(args) {
-		console.log("eaten:", args.snake, args.pointItem);
-	});
 	Crafty.e("Delay").delay(function() {
 	}, 2000);
 });
