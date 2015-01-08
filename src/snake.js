@@ -14,42 +14,15 @@ Game.offset = Game.tileSize + Game.borderSize;
 Game.w = Game.cols * Game.offset + Game.borderSize;
 Game.h = Game.rows * Game.offset + Game.borderSize;
 
-Crafty.c("GridCollision", {
-	allObjs: [],
-	init: function() {
-		this.allObjs.push(this);
-	},
-	checkHits: function() {
-		var match = [];
-		for (var index in this.allObjs) {
-			var obj = this.allObjs[index];
-			if (obj === this) {
-				continue;
-			};
-			if (obj.col === this.col && obj.row === this.row) {
-				match.push(obj.parent);
-			};
-		};
-		if (match.length > 0) {
-			this.parent.trigger("OnHit", match);
-			match.push(this);
-		};
-	},
-	remove: function() {
-		var index = this.allObjs.indexOf(this);
-		if (index !== -1) {
-			this.allObjs.splice(index, 1);
-		};
-	},
-});
-
 Crafty.c("Cell", {
+	allCells: {},
 	init: function() {
 		this.requires("2D, Canvas, Color, Tween, Delay");
 	},
 	cell: function(col, row, parent) {
 		this.col = col;
 		this.row = row;
+		this._addToAllCells();
 		this.parent = parent;
 		this._orig_attrs = {
 			x: this.col * Game.offset + Game.borderSize,
@@ -75,6 +48,43 @@ Crafty.c("Cell", {
 		}, Game.cellDelay);
 	},
 	remove: function() {
+		this._removeFromAllCells();
+	},
+	_key: function() {
+		return this.col + "," + this.row;
+	},
+	_addToAllCells: function() {
+		var key = this._key();
+		if (this.allCells[key] === undefined) {
+			this.allCells[key] = [];
+		};
+		this.allCells[key].push(this);
+	},
+	_removeFromAllCells: function() {
+		var key = this._key();
+		var index = this.allCells[key].indexOf(this);
+		if (index !== -1) {
+			this.allCells[key].splice(index, 1);
+		};
+	},
+});
+
+Crafty.c("CellWithCollision", {
+	init: function() {
+		this.requires("Cell");
+	},
+	checkHits: function() {
+		var cellsAtSameCoords = this.allCells[this._key()];
+		if (cellsAtSameCoords.length > 1) {
+			var otherCells = cellsAtSameCoords.filter(this._differs);
+			var otherObjs = otherCells.map(function(cell) {
+				return cell.parent;
+			});
+			this.parent.trigger("OnHit", otherObjs);
+		};
+	},
+	_differs: function(other) {
+		return this !== other;
 	},
 });
 
@@ -84,7 +94,7 @@ Crafty.c("Grid", {
 		this.cells = [];
 	},
 	createCell: function(col, row, parent) {
-		var cell = Crafty.e("Cell, GridCollision").cell(col, row, parent);
+		var cell = Crafty.e("CellWithCollision").cell(col, row, parent);
 		this.cells.push(cell);
 		cell.checkHits();
 	},
