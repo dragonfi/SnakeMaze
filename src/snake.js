@@ -160,7 +160,7 @@ Crafty.c("PointItem", {
 
 Crafty.c("BorderWalls", {
 	init: function() {
-		this.requires("Grid");
+		this.requires("Grid, Wall");
 		this.color = "#aaaaaa";
 		this.createWalls();
 	},
@@ -220,7 +220,7 @@ Crafty.c("Snake", {
 		if (obj.has("PointItem")) {
 			this.maxLength += 1;
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
-		} else if (obj.has("BorderWalls") || obj.has("Snake")) {
+		} else if (obj.has("Wall") || obj.has("Snake")) {
 			this.stopMovement();
 		};
 	},
