@@ -5,6 +5,7 @@
 var Game = {
 	cols: 16,
 	rows: 9,
+	statusLines: 1,
 	tileSize: 20,
 	borderSize: 5,
 	cellDelay: 500,
@@ -12,7 +13,7 @@ var Game = {
 
 Game.offset = Game.tileSize + Game.borderSize;
 Game.w = Game.cols * Game.offset + Game.borderSize;
-Game.h = Game.rows * Game.offset + Game.borderSize;
+Game.h = (Game.rows + Game.statusLines) * Game.offset + Game.borderSize;
 
 Crafty.c("Cell", {
 	init: function() {
@@ -301,6 +302,42 @@ Crafty.c("RestartOnSpace", {
 	},
 });
 
+Crafty.c("ScoreLine", {
+	init: function() {
+		this.requires("2D, DOM, Text");
+	},
+	scoreLine: function(lineNumber) {
+		this.attr({
+			x: Game.borderSize + 2,
+			y: Game.borderSize + Game.offset * Game.rows + 4,
+			w: Game.offset * Game.cols - 2 - Game.borderSize,
+			h: Game.offset * 2,
+		}).textFont({
+			size: Game.cellSize,
+			family: "Orbitron",
+		}).textColor("#ffffff").text("Points:")
+		.css({"text-align": "left"});
+		return this;
+	},
+});
+
+Crafty.c("Score", {
+	init: function() {
+		this.requires("2D");
+		this.line1 = Crafty.e("ScoreLine").scoreLine(1);
+		this.bind("PointItemEaten", this.incrementScore);
+		this.score = 0;
+		this.updateText();
+	},
+	updateText: function() {
+		this.line1.text("Score: " + this.score);
+	},
+	incrementScore: function(data) {
+		this.score += 1;
+		this.updateText();
+	},
+});
+
 Crafty.scene("SetUp", function() {
 	console.log("SetUp");
 	Crafty.e("RestartOnSpace");
@@ -312,6 +349,7 @@ Crafty.scene("SetUp", function() {
 Crafty.scene("SnakeGame", function() {
 	console.log("SnakeGame");
 	var wall = Crafty.e("BorderWalls");
+	var score = Crafty.e("Score");
 	var pi = Crafty.e("PointItem").pointItem(5, 4);
 	var p1 = Crafty.e("Player1").snake(3, 4, "right", 5, "#00ff00");
 	Crafty.e("Delay").delay(function() {

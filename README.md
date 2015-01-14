@@ -28,3 +28,8 @@ Todo
 * Beginning of snake is hard to see
 * Need more levels, maybe achievements
 * 2 player game
+
+Level Ideas
+-----------
+
+* target: reach a certain size, the longer the snake, the more decreasing points 
