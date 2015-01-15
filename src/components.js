@@ -101,8 +101,8 @@ Crafty.c("Grid", {
 
 Crafty.c("PointItem", {
 	init: function() {
-		this.requires("Grid, EmptyCellGetter");
-		this.color = "#ffff00";
+		this.requires("Grid");
+		this.color = "#ffffff";
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
 				this.clearCells();
@@ -117,9 +117,9 @@ Crafty.c("PointItem", {
 	},
 });
 
-Crafty.c("ReappearingPointItem", {
+Crafty.c("Reappearing", {
 	init: function() {
-		this.requires("PointItem");
+		this.requires("PointItem, EmptyCellGetter");
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
 				this.randomMove();
@@ -135,6 +135,38 @@ Crafty.c("ReappearingPointItem", {
 		this.col = coords.col;
 		this.row = coords.row;
 		this.createCell(this.col, this.row, this);
+	},
+});
+
+Crafty.c("Neumann", {
+	init: function() {
+		this.requires("Reappearing");
+		this.bind("PointItemEaten", function(args) {
+			if (args.pointItem === this) {
+				var pi = Crafty.e("Neumann");
+				if (this.has("SpeedIncrease")) {
+					pi.addComponent("SpeedIncrease");
+				};
+				if (this.has("LengthIncrease")) {
+					pi.addComponent("LengthIncrease");
+				};
+				pi.randomMove();
+			};
+		});
+	},
+});
+
+Crafty.c("LengthIncrease", {
+	init: function() {
+		this.requires("PointItem, ScoreIncrease");
+		this.color = "#ffff00";
+	},
+});
+
+Crafty.c("SpeedIncrease", {
+	init: function() {
+		this.requires("PointItem, ScoreIncrease");
+		this.color = "#0000ff";
 	},
 });
 
@@ -169,6 +201,7 @@ Crafty.c("Snake", {
 		this.requires("Grid");
 		this.segments = [];
 		this.score = 0;
+		this._speed = 4.0;
 		this.bind("OnHit", this.handleCollisions);
 		this.bind("ClearGame", this.stopMovement);
 	},
@@ -185,8 +218,20 @@ Crafty.c("Snake", {
 		this.startMovement();
 		return this;
 	},
+	speed: function(value) {
+		if (value !== undefined) {
+			this._speed = value;
+			this._recalculateMoveDelay();
+		};
+		return this._speed;
+	},
+	_recalculateMoveDelay: function() {
+		var delay = Math.floor(1000 / this._speed);
+		this.cancelDelay(this.moveSnake);
+		this.delay(this.moveSnake, delay, -1);
+	},
 	startMovement: function() {
-		this.delay(this.moveSnake, 200, -1);
+		this._recalculateMoveDelay();
 	},
 	stopMovement: function() {
 		this.cancelDelay(this.moveSnake);
@@ -199,8 +244,16 @@ Crafty.c("Snake", {
 	},
 	_handleCollision: function(obj) {
 		if (obj.has("PointItem")) {
-			this.maxLength += 1;
-			this.score += 1;
+			if (obj.has("LengthIncrease")) {
+				this.maxLength += 1;
+			};
+			if (obj.has("SpeedIncrease")) {
+				this.speed(this.speed() + Game.speedDelta);
+			};
+			if (obj.has("ScoreIncrease")) {
+				this.score += 1;
+				Crafty.trigger("ScoreChanged", this);
+			};
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
 		} else if (obj.has("Wall") || obj.has("Snake")) {
 			this.stopMovement();
@@ -356,7 +409,7 @@ Crafty.c("Score", {
 	init: function() {
 		this.requires("2D");
 		this.line1 = Crafty.e("ScoreLine").ScoreLine(0);
-		this.bind("PointItemEaten", this.incrementScore);
+		this.bind("ScoreChanged", this.incrementScore);
 		this.p1score = 0;
 		this.p2score = 0;
 		this.updateText();
@@ -368,11 +421,11 @@ Crafty.c("Score", {
 		};
 		this.line1.text(text);
 	},
-	incrementScore: function(data) {
-		if (data.snake.has("Player1")) {
-			this.p1score += 1;
-		} else if (data.snake.has("Player2")) {
-			this.p2score += 1;
+	incrementScore: function(snake) {
+		if (snake.has("Player1")) {
+			this.p1score = snake.score;
+		} else if (snake.has("Player2")) {
+			this.p2score = snake.score;
 		};
 		this.updateText();
 	},
@@ -390,7 +443,10 @@ Crafty.c("MenuPoints", {
 			var col = items[i][0];
 			var row = items[i][1];
 			var text = items[i][3];
-			var pi = Crafty.e("PointItem").PointItem(col, row);
+			var pi = Crafty.e("PointItem");
+			pi.color = "#ffff00";
+			pi.PointItem(col, row);
+			console.log(pi.color);
 			if (items[i][2].constructor === String) {
 				pi.scene = items[i][2];
 			} else if (items[i][2].constructor === Array) {

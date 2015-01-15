@@ -9,6 +9,7 @@ var Game = {
 	tileSize: 20,
 	borderSize: 5,
 	cellDelay: 500,
+	speedDelta: 0.2,
 }
 
 Game.offset = Game.tileSize + Game.borderSize;
