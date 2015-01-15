@@ -3,9 +3,9 @@
 // Requires: kongregate.js
 
 var Game = {
-	cols: 16,
-	rows: 9,
-	statusLines: 1,
+	cols: 25,
+	rows: 14,
+	statusLines: 3,
 	tileSize: 20,
 	borderSize: 5,
 	cellDelay: 500,

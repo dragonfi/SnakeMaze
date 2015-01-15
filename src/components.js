@@ -105,7 +105,7 @@ Crafty.c("PointItem", {
 		this.color = "#ffff00";
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
-				this.randomMove();
+				this.clearCells();
 			};
 		});
 	},
@@ -115,8 +115,18 @@ Crafty.c("PointItem", {
 		this.createCell(this.col, this.row, this);
 		return this;
 	},
+});
+
+Crafty.c("ReappearingPointItem", {
+	init: function() {
+		this.requires("PointItem");
+		this.bind("PointItemEaten", function(args) {
+			if (args.pointItem === this) {
+				this.randomMove();
+			};
+		});
+	},
 	randomMove: function() {
-		this.clearCells();
 		var coords = Utils.rand.choice(this.emptyCells());
 		if (coords === undefined) {
 			Crafty.trigger("GameOver", "no free cells left");
@@ -371,20 +381,40 @@ Crafty.c("Score", {
 Crafty.c("MenuPoints", {
 	init: function() {
 		this.requires("2D, SceneChanger");
-		this.bind("PointItemEaten", this.selectNextScene);
+		this.bind("PointItemEaten", this.handleSelection);
+		this.cells = [];
 	},
 	MenuPoints: function(items) {
+		this.clearCells();
 		for (var i in items) {
 			var col = items[i][0];
 			var row = items[i][1];
-			var scene = items[i][2];
 			var text = items[i][3];
 			var pi = Crafty.e("PointItem").PointItem(col, row);
-			pi.scene = scene;
-			Crafty.e("TextCell").TextCell(col + 1, row).text(text);
+			if (items[i][2].constructor === String) {
+				pi.scene = items[i][2];
+			} else if (items[i][2].constructor === Array) {
+				pi.menuEntries = items[i][2];
+			} else {
+				throw new Error("Expected menu entries or scene name");
+			};
+			var tc = Crafty.e("TextCell").TextCell(col + 1, row).text(text);
+			this.cells.push(tc);
+			this.cells.push.apply(this.cells, pi.cells);
 		};
 	},
-	selectNextScene: function(data) {
-		this.changeScene(data.pointItem.scene);
+	clearCells: function() {
+		this.cells.forEach(function(c) {
+			c.clear();
+		});
+		this.cells = [];
+	},
+	handleSelection: function(data) {
+		if (data.pointItem.scene !== undefined) {
+			this.changeScene(data.pointItem.scene);
+		} else if (data.pointItem.menuEntries !== undefined) {
+			this.clearCells();
+			this.MenuPoints(data.pointItem.menuEntries);
+		};
 	},
 });
