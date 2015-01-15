@@ -20,7 +20,7 @@ Crafty.c("Cell", {
 		this.requires("2D, Canvas, Color, Tween, Delay");
 		this.bind("ClearGame", this.clear);
 	},
-	cell: function(col, row, parent) {
+	Cell: function(col, row, parent) {
 		this.col = col;
 		this.row = row;
 		this.parent = parent;
@@ -119,7 +119,7 @@ Crafty.c("Grid", {
 		return this.cellHandler.emptyCells();
 	},
 	createCell: function(col, row, parent) {
-		var cell = Crafty.e("Cell").cell(col, row, parent);
+		var cell = Crafty.e("Cell").Cell(col, row, parent);
 		this.cells.push(cell);
 	},
 	clearCells: function() {
@@ -140,7 +140,7 @@ Crafty.c("PointItem", {
 			};
 		});
 	},
-	pointItem: function(col, row) {
+	PointItem: function(col, row) {
 		this.col = Math.floor(col);
 		this.row = Math.floor(row);
 		this.createCell(this.col, this.row, this);
@@ -193,7 +193,7 @@ Crafty.c("Snake", {
 		this.bind("OnHit", this.handleCollisions);
 		this.bind("ClearGame", this.stopMovement);
 	},
-	snake: function(col, row, dir, len, color) {
+	Snake: function(col, row, dir, len, color) {
 		this.attr({
 			color: color,
 			col: col,
@@ -408,7 +408,7 @@ Crafty.c("MenuPoints", {
 			var row = items[i][1];
 			var scene = items[i][2];
 			var text = items[i][3];
-			var pi = Crafty.e("PointItem").pointItem(col, row);
+			var pi = Crafty.e("PointItem").PointItem(col, row);
 			pi.scene = scene;
 			Crafty.e("TextCell").TextCell(col + 1, row).text(text);
 		};
@@ -427,16 +427,16 @@ Crafty.scene("SetUp", function() {
 
 Crafty.scene("OnePlayerMode", function() {
 	Crafty.e("BorderWalls");
-	Crafty.e("PointItem").pointItem(5, 4);
-	Crafty.e("Player1").snake(3, 4, "right", 5, "#00ff00");
+	Crafty.e("PointItem").PointItem(5, 4);
+	Crafty.e("Player1").Snake(3, 4, "right", 5, "#00ff00");
 	Crafty.e("Score");
 });
 
 Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("BorderWalls");
-	Crafty.e("PointItem").pointItem(Game.cols/2, Game.rows/2);
-	Crafty.e("Player1").snake(1, 1, "right", 5, "#00ff00");
-	Crafty.e("Player2").snake(Game.cols-2, Game.rows-2, "left", 5, "#ff0000");
+	Crafty.e("PointItem").PointItem(Game.cols/2, Game.rows/2);
+	Crafty.e("Player1").Snake(1, 1, "right", 5, "#00ff00");
+	Crafty.e("Player2").Snake(Game.cols-2, Game.rows-2, "left", 5, "#ff0000");
 	Crafty.e("Score");
 });
 
@@ -447,7 +447,7 @@ Crafty.scene("MainMenu", function() {
 		[2, 4, "TwoPlayerMode", "Two Player Cooperative"],
 		[2, 6, "TwoPlayerMode", "Two Player Versus"]
 	]);
-	Crafty.e("Player1").snake(10, 2, "left", 5, "#00ff00");
+	Crafty.e("Player1").Snake(10, 2, "left", 5, "#00ff00");
 } );
 
 window.onload = function() {
