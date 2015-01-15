@@ -217,8 +217,8 @@ Crafty.c("Snake", {
 	moveSnake: function() {
 		this.dir = this.newDir;
 		var delta = this._directions[this.dir];
-		this.col += delta.col;
-		this.row += delta.row;
+		this.col = Utils.mod(this.col + delta.col, Game.cols);
+		this.row = Utils.mod(this.row + delta.row, Game.rows);
 		this._addSegment(this.col, this.row);
 	},
 	changeDirection: function(newDir) {

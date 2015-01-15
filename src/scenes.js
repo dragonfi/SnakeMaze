@@ -33,7 +33,6 @@ Crafty.scene("TwoPlayerMode", function() {
 });
 
 Crafty.scene("MainMenu", function() {
-	Crafty.e("BorderWalls");
 	one_player_stage_select = [
 		[2, 2, "Stage1", "Stage 1"],
 		[2, 4, "Stage2", "Stage 2"],
