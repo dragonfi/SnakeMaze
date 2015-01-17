@@ -170,6 +170,13 @@ Crafty.c("SpeedIncrease", {
 	},
 });
 
+Crafty.c("Decrease", {
+	init: function() {
+		this.requires("PointItem");
+		this.color = "#ff0000";
+	},
+});
+
 Crafty.c("BorderWalls", {
 	init: function() {
 		this.requires("Grid, Wall");
@@ -253,6 +260,15 @@ Crafty.c("Snake", {
 			if (obj.has("ScoreIncrease")) {
 				this.score += 1;
 				Crafty.trigger("ScoreChanged", this);
+			};
+			if (obj.has("Decrease")) {
+				this.speed(this.speed() - Game.speedDelta);
+				this.maxLength -= 1;
+				this.score -= 4;
+				Crafty.trigger("ScoreChanged", this);
+				if (this.maxLength < 1) {
+					this.stopSnake();
+				};
 			};
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
 		} else if (obj.has("Wall") || obj.has("Snake")) {

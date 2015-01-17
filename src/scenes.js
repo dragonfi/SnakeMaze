@@ -38,6 +38,7 @@ Crafty.scene("TwoPlayerMode", function() {
 	var row = Game.rows / 2;
 	Crafty.e("PointItem, Reappearing, LengthIncrease").PointItem(col, row);
 	Crafty.e("PointItem, Reappearing, SpeedIncrease").PointItem(col, row - 1);
+	Crafty.e("PointItem, Reappearing, Decrease").PointItem(col, row + 1);
 	Crafty.e("Player1").Snake(1, 1, "right", 5, "#00ff00");
 	Crafty.e("Player2").Snake(Game.cols-2, Game.rows-2, "left", 5, "#ff0000");
 	Crafty.e("Score");
