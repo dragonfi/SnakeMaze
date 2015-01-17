@@ -212,9 +212,8 @@ Crafty.c("Snake", {
 		this.bind("OnHit", this.handleCollisions);
 		this.bind("ClearGame", this.stopMovement);
 	},
-	Snake: function(col, row, dir, len, color) {
+	Snake: function(col, row, dir, len) {
 		this.attr({
-			color: color,
 			col: col,
 			row: row,
 			dir: dir,
@@ -267,7 +266,7 @@ Crafty.c("Snake", {
 				this.score -= 4;
 				Crafty.trigger("ScoreChanged", this);
 				if (this.maxLength < 1) {
-					this.stopSnake();
+					this.stopMovement();
 				};
 			};
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
@@ -326,6 +325,8 @@ Crafty.c("Controls", {
 });
 
 Crafty.c("Player1", {
+	name: "Green",
+	color: "#00ff00",
 	init: function() {
 		this.requires("Controls, Snake");
 		this.keymap = {
@@ -338,6 +339,8 @@ Crafty.c("Player1", {
 });
 
 Crafty.c("Player2", {
+	name: "Red",
+	color: "#ff0000",
 	init: function() {
 		this.requires("Controls, Snake");
 		this.keymap = {
@@ -410,13 +413,12 @@ Crafty.c("TextCell", {
 	},
 });
 
-Crafty.c("ScoreLine", {
+Crafty.c("StatusLine", {
 	init: function() {
 		this.requires("TextCell");
 	},
-	ScoreLine: function(lineNumber) {
+	StatusLine: function(lineNumber) {
 		this.TextCell(0, Game.rows + lineNumber, Game.cols);
-		this.text("Points:");
 		return this;
 	},
 });
@@ -424,26 +426,38 @@ Crafty.c("ScoreLine", {
 Crafty.c("Score", {
 	init: function() {
 		this.requires("2D");
-		this.line1 = Crafty.e("ScoreLine").ScoreLine(0);
+		this.lines = [
+			this._snakeLine(0),
+			this._snakeLine(1),
+		];
+		this.objectivesLine = Crafty.e("StatusLine").StatusLine(2);
 		this.bind("ScoreChanged", this.incrementScore);
-		this.p1score = 0;
-		this.p2score = 0;
-		this.updateText();
+		Crafty("Snake").get().forEach(function(snake) {
+			Crafty.trigger("ScoreChanged", snake);
+		});
 	},
-	updateText: function() {
-		var text = "Score: " + this.p1score;
-		if (Crafty("Snake").length > 1) {
-			text = "Green: " + this.p1score + " Red: " + this.p2score;
-		};
-		this.line1.text(text);
+	_snakeLine: function(lineNumber) {
+		var row = Game.rows + lineNumber;
+		var length = 6;
+		return [
+			Crafty.e("TextCell").TextCell(0, row, length),
+			Crafty.e("TextCell").TextCell(5, row, length),
+			Crafty.e("TextCell").TextCell(10, row, length),
+			Crafty.e("TextCell").TextCell(15, row, length),
+		];
+	},
+	_updateSnakeLine: function(line, snake) {
+		this.lines[line][0].text(snake.name + ":");
+		this.lines[line][1].text("Score: " + snake.score);
+		this.lines[line][2].text("Length: " + snake.maxLength);
+		this.lines[line][3].text("Speed: " + snake.speed().toFixed(2));
 	},
 	incrementScore: function(snake) {
 		if (snake.has("Player1")) {
-			this.p1score = snake.score;
+			this._updateSnakeLine(0, snake);
 		} else if (snake.has("Player2")) {
-			this.p2score = snake.score;
+			this._updateSnakeLine(1, snake);
 		};
-		this.updateText();
 	},
 });
 
