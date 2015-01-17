@@ -208,9 +208,11 @@ Crafty.c("Snake", {
 		this.requires("Grid");
 		this.segments = [];
 		this.score = 0;
+		this.status = "playing";
 		this._speed = 4.0;
 		this.bind("OnHit", this.handleCollisions);
 		this.bind("ClearGame", this.stopMovement);
+		this.bind("GameOver", this.stopMovement);
 	},
 	Snake: function(col, row, dir, len) {
 		this.attr({
@@ -258,20 +260,21 @@ Crafty.c("Snake", {
 			};
 			if (obj.has("ScoreIncrease")) {
 				this.score += 1;
-				Crafty.trigger("ScoreChanged", this);
 			};
 			if (obj.has("Decrease")) {
 				this.speed(this.speed() - Game.speedDelta);
 				this.maxLength -= 1;
 				this.score -= 4;
-				Crafty.trigger("ScoreChanged", this);
 				if (this.maxLength < 1) {
 					this.stopMovement();
 				};
 			};
+			Crafty.trigger("SnakeChanged", this);
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
 		} else if (obj.has("Wall") || obj.has("Snake")) {
+			this.status = "lost";
 			this.stopMovement();
+			Crafty.trigger("SnakeChanged", this);
 		};
 	},
 	_addSegment: function(col, row) {
@@ -430,10 +433,16 @@ Crafty.c("Score", {
 			this._snakeLine(0),
 			this._snakeLine(1),
 		];
+		this.gameIsOver = false;
 		this.objectivesLine = Crafty.e("StatusLine").StatusLine(2);
-		this.bind("ScoreChanged", this.incrementScore);
+		this.bind("SnakeChanged", this.updateScore);
+		this.bind("ObjectiveChanged", this.updateObjective);
+		this.bind("GameOver", this.handleGameOver);
 		Crafty("Snake").get().forEach(function(snake) {
-			Crafty.trigger("ScoreChanged", snake);
+			Crafty.trigger("SnakeChanged", snake);
+		});
+		Crafty("Objective").get().forEach(function(o) {
+			Crafty.trigger("ObjectiveChanged", o);
 		});
 	},
 	_snakeLine: function(lineNumber) {
@@ -444,6 +453,7 @@ Crafty.c("Score", {
 			Crafty.e("TextCell").TextCell(5, row, length),
 			Crafty.e("TextCell").TextCell(10, row, length),
 			Crafty.e("TextCell").TextCell(15, row, length),
+			Crafty.e("TextCell").TextCell(20, row, length),
 		];
 	},
 	_updateSnakeLine: function(line, snake) {
@@ -451,12 +461,51 @@ Crafty.c("Score", {
 		this.lines[line][1].text("Score: " + snake.score);
 		this.lines[line][2].text("Length: " + snake.maxLength);
 		this.lines[line][3].text("Speed: " + snake.speed().toFixed(2));
+		var status = "";
+		if (snake.status === "won") {
+			status = " -- Victory!";
+		} else if (snake.status === "lost") {
+			status = " -- Defeat..";
+		};
+		this.lines[line][4].text(status);
 	},
-	incrementScore: function(snake) {
+	updateScore: function(snake) {
 		if (snake.has("Player1")) {
 			this._updateSnakeLine(0, snake);
 		} else if (snake.has("Player2")) {
 			this._updateSnakeLine(1, snake);
+		};
+	},
+	updateObjective: function(objective) {
+		this.objectivesLine.text(objective.text);
+	},
+	handleGameOver: function() {
+		this.gameIsOver = true;
+		var self = this;
+		Crafty("Snake").get().forEach(function(snake) {
+			Crafty("Objective").get().forEach(function(o) {
+				if (snake.status != "lost") {
+					snake.status = o.condition(snake) ? "won" : "lost";
+				};
+			});
+			self.updateScore(snake);
+		});
+	},
+});
+
+Crafty.c("Objective", {
+	init: function() {
+		this.requires("2D");
+		this.bind("SnakeChanged", this.checkCompletion);
+	},
+	Objective: function(text, condition) {
+		this.text = text;
+		this.condition = condition;
+		Crafty.trigger("ObjectiveChanged", this);
+	},
+	checkCompletion: function(snake) {
+		if (this.condition(snake)) {
+			Crafty.trigger("GameOver");
 		};
 	},
 });
