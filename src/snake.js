@@ -4,7 +4,7 @@
 
 var Game = {
 	cols: 25,
-	rows: 14,
+	rows: 15,
 	statusLines: 3,
 	tileSize: 20,
 	borderSize: 5,

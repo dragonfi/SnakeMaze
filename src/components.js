@@ -106,6 +106,7 @@ Crafty.c("PointItem", {
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
 				this.clearCells();
+				this.destroy();
 			};
 		});
 	},
@@ -119,10 +120,10 @@ Crafty.c("PointItem", {
 
 Crafty.c("Reappearing", {
 	init: function() {
-		this.requires("PointItem, EmptyCellGetter");
+		this.requires("EmptyCellGetter");
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
-				this.randomMove();
+				this.clone().randomMove();
 			};
 		});
 	},
@@ -177,10 +178,19 @@ Crafty.c("Decrease", {
 	},
 });
 
+Crafty.c("Wall", {
+	init: function() {
+		this.requires("Grid");
+		this.color = "#aaaaaa";
+	},
+	Wall: function(col, row) {
+		this.createCell(col, row, this);
+	},
+});
+
 Crafty.c("BorderWalls", {
 	init: function() {
-		this.requires("Grid, Wall");
-		this.color = "#aaaaaa";
+		this.requires("Wall");
 		this.createWalls();
 	},
 	_is_border_cell: function(col, row) {
@@ -266,16 +276,16 @@ Crafty.c("Snake", {
 				this.maxLength -= 1;
 				this.score -= 4;
 				if (this.maxLength < 1) {
+					this.status = "lost";
 					this.stopMovement();
 				};
 			};
-			Crafty.trigger("SnakeChanged", this);
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
 		} else if (obj.has("Wall") || obj.has("Snake")) {
 			this.status = "lost";
 			this.stopMovement();
-			Crafty.trigger("SnakeChanged", this);
 		};
+		Crafty.trigger("SnakeChanged", this);
 	},
 	_addSegment: function(col, row) {
 		this.segments.push({col: col, row: row});
@@ -463,9 +473,9 @@ Crafty.c("Score", {
 		this.lines[line][3].text("Speed: " + snake.speed().toFixed(2));
 		var status = "";
 		if (snake.status === "won") {
-			status = " -- Victory!";
+			status = " -- Won!";
 		} else if (snake.status === "lost") {
-			status = " -- Defeat..";
+			status = " -- Lost";
 		};
 		this.lines[line][4].text(status);
 	},

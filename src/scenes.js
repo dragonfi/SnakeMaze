@@ -1,3 +1,27 @@
+function sceneFromLines(lines) {
+	var createComponent = {
+		"#": function(col, row) {
+			Crafty.e("Wall").Wall(col, row);
+		},
+		">": function(col, row) {
+			Crafty.e("Player1").Snake(col, row, "right", 1);
+		},
+		"o": function(col, row) {
+			Crafty.e("PointItem, LengthIncrease").PointItem(col, row);
+		},
+		" ": function(col, row) {},
+	};
+	lines.forEach(function(line, row) {
+		line.split("").forEach(function(char, col) {
+			if (char === " "){
+				return;
+			};
+			createComponent[char](col, row);
+		});
+	});
+	Crafty.e("Score");
+};
+
 Crafty.scene("SetUp", function() {
 	Crafty.e("RestartOnSpace");
 	Crafty.e("Delay").delay(function() {
@@ -6,14 +30,28 @@ Crafty.scene("SetUp", function() {
 });
 
 Crafty.scene("Stage1", function() {
-	Crafty.e("BorderWalls");
-	Crafty.e("PointItem, Reappearing, LengthIncrease").PointItem(5, 4);
-	Crafty.e("Player1").Snake(3, 4, "right", 5);
-	Crafty.e("Score");
+	sceneFromLines([
+		"#########################",
+		"#                       #",
+		"#>ooo o  o  o  o  o ooo #",
+		"# o   oo o o o o o  o   #",
+		"# ooo o oo ooo oo   ooo #",
+		"#   o o  o o o o o  o   #",
+		"# ooo o  o o o o  o ooo #",
+		"#                       #",
+		"#   o   o  o  ooo ooo   #",
+		"#   oo oo o o   o o     #",
+		"#   o o o ooo  o  ooo   #",
+		"#   o   o o o o   o     #",
+		"#   o   o o o ooo ooo   #",
+		"#                       #",
+		"#########################",
+	]);
 	Crafty.e("Objective").Objective(
-		"Reach a length of 10",
+		"Collect all point items",
 		function(snake) {
-			return snake.maxLength >= 10;
+			console.log("point items left:", Crafty("PointItem").length);
+			return Crafty("PointItem").length === 0;
 		}
 	);
 });
@@ -23,9 +61,9 @@ Crafty.scene("Stage2", function() {
 	[[5, 4], [7, 4], [9, 4], [9, 6], [9, 8], [9, 10]].forEach(function(p) {
 		var col = p[0];
 		var row = p[1];
-		Crafty.e("PointItem, Reappearing, LengthIncrease").PointItem(col, row);
+		Crafty.e("PointItem, LengthIncrease").PointItem(col, row);
 	});
-	Crafty.e("PointItem, Reappearing, LengthIncrease").PointItem(9, 12);
+	Crafty.e("PointItem, LengthIncrease").PointItem(9, 12);
 	Crafty.e("Player1").Snake(3, 4, "right", 5);
 	Crafty.e("Score");
 	Crafty.e("Objective").Objective(
