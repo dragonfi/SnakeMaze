@@ -123,14 +123,23 @@ Crafty.c("Reappearing", {
 		this.requires("EmptyCellGetter");
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
-				this.clone().randomMove();
+				var newPI = this.clone();
+				newPI.attr("randomMask", this.randomMask).randomMove();
 			};
 		});
 	},
 	randomMove: function() {
-		var coords = Utils.rand.choice(this.emptyCells());
+		var validCells = this.emptyCells();
+		console.log(this.randomMask);
+		if (this.randomMask !== undefined) {
+			validCells = validCells.filter(function(coords) {
+				return this.randomMask[coords.row].charAt(coords.col) === "o";
+			}.bind(this));
+		};
+		var coords = Utils.rand.choice(validCells);
 		if (coords === undefined) {
-			Crafty.trigger("GameOver", "no free cells left");
+			Crafty.trigger("NoFreeCellsLeft");
+			Crafty.trigger("GameOver");
 			return;
 		};
 		this.col = coords.col;
@@ -144,14 +153,8 @@ Crafty.c("Neumann", {
 		this.requires("Reappearing");
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
-				var pi = Crafty.e("Neumann");
-				if (this.has("SpeedIncrease")) {
-					pi.addComponent("SpeedIncrease");
-				};
-				if (this.has("LengthIncrease")) {
-					pi.addComponent("LengthIncrease");
-				};
-				pi.randomMove();
+				var pi = this.clone();
+				pi.attr({randomMask: this.randomMask}).randomMove();
 			};
 		});
 	},
@@ -512,6 +515,7 @@ Crafty.c("Objective", {
 		this.text = text;
 		this.condition = condition;
 		Crafty.trigger("ObjectiveChanged", this);
+		return this;
 	},
 	checkCompletion: function(snake) {
 		if (this.condition(snake)) {

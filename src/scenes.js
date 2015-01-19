@@ -30,6 +30,36 @@ Crafty.scene("SetUp", function() {
 });
 
 Crafty.scene("Stage1", function() {
+	Crafty.e("BorderWalls");
+	var pi = Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(6, 2)
+	pi.attr("randomMask", [
+		"#########################",
+		"#                       #",
+		"# >                     #",
+		"#                       #",
+		"#                       #",
+		"# o o ooo o   o   ooo o #",
+		"# o o o   o   o   o o o #",
+		"# ooo ooo o   o   o o o #",
+		"# o o o   o   o   o o   #",
+		"# o o ooo ooo ooo ooo o #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#########################",
+	]);
+	Crafty.e("Player1").Snake(2, 2, "right", 5);
+	Crafty.e("Score");
+	Crafty.e("Objective").Objective(
+		"Play until it's visible",
+		function() {return false;}
+	).bind("NoFreeCellsLeft", function() {
+		this.condition = function() {return true;}
+	});
+});
+
+Crafty.scene("Stage2", function() {
 	sceneFromLines([
 		"#########################",
 		"#                       #",
@@ -50,26 +80,7 @@ Crafty.scene("Stage1", function() {
 	Crafty.e("Objective").Objective(
 		"Collect all point items",
 		function(snake) {
-			console.log("point items left:", Crafty("PointItem").length);
 			return Crafty("PointItem").length === 0;
-		}
-	);
-});
-
-Crafty.scene("Stage2", function() {
-	Crafty.e("BorderWalls");
-	[[5, 4], [7, 4], [9, 4], [9, 6], [9, 8], [9, 10]].forEach(function(p) {
-		var col = p[0];
-		var row = p[1];
-		Crafty.e("PointItem, LengthIncrease").PointItem(col, row);
-	});
-	Crafty.e("PointItem, LengthIncrease").PointItem(9, 12);
-	Crafty.e("Player1").Snake(3, 4, "right", 5);
-	Crafty.e("Score");
-	Crafty.e("Objective").Objective(
-		"Reach a length of 15",
-		function(snake) {
-			return snake.maxLength >= 15;
 		}
 	);
 });
