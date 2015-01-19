@@ -9,6 +9,9 @@ function sceneFromLines(lines) {
 		"o": function(col, row) {
 			Crafty.e("PointItem, LengthIncrease").PointItem(col, row);
 		},
+		"s": function(col, row) {
+			Crafty.e("PointItem, SpeedIncrease").PointItem(col, row);
+		},
 		" ": function(col, row) {},
 	};
 	lines.forEach(function(line, row) {
@@ -57,9 +60,10 @@ Crafty.scene("Stage1", function() {
 	).bind("NoFreeCellsLeft", function() {
 		this.condition = function() {return true;}
 	});
+	// Bonus: show the whole text sans one cell (no snake overlap)
 });
 
-Crafty.scene("Stage2", function() {
+Crafty.scene("Stage3", function() {
 	sceneFromLines([
 		"#########################",
 		"#                       #",
@@ -68,7 +72,7 @@ Crafty.scene("Stage2", function() {
 		"# ooo o oo ooo oo   ooo #",
 		"#   o o  o o o o o  o   #",
 		"# ooo o  o o o o  o ooo #",
-		"#                       #",
+		"# ##################### #",
 		"#   o   o  o  ooo ooo   #",
 		"#   oo oo o o   o o     #",
 		"#   o o o ooo  o  ooo   #",
@@ -83,20 +87,35 @@ Crafty.scene("Stage2", function() {
 			return Crafty("PointItem").length === 0;
 		}
 	);
+	// Bonus: collect in the fastest was possible
 });
 
-Crafty.scene("Stage3", function() {
-	Crafty.e("BorderWalls");
-	Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(8, 4);
-	Crafty.e("PointItem, Neumann, SpeedIncrease").PointItem(10, 4);
-	Crafty.e("Player1").Snake(3, 4, "right", 5);
+Crafty.scene("Stage2", function() {
+	sceneFromLines([
+		"#########################",
+		"#                       #",
+		"# #   #oo# ssooo#   #oo #",
+		"# #   #o # s o o## ##o  #",
+		"# # # #oo# s o o# # #oo #",
+		"# ## ##o # s o o#   #o  #",
+		"# #   #oo##ssooo#   #oo #",
+		"# >                     #",
+		"#        ooo sss        #",
+		"#         o  s s        #",
+		"#         o  s s        #",
+		"#         o  s s        #",
+		"#         o  sss        #",
+		"#                       #",
+		"#########################",
+	]);
 	Crafty.e("Score");
 	Crafty.e("Objective").Objective(
-		"Reach a length of 10 and a speed of 5",
+		"Collect all point items",
 		function(snake) {
-			return snake.maxLength >= 10 && snake.speed() >= 5;
+			return Crafty("PointItem").length === 0;
 		}
 	);
+	// Bonus: collect all yellow at max speed
 });
 
 Crafty.scene("TwoPlayerMode", function() {
