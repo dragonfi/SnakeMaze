@@ -61,10 +61,10 @@ Crafty.scene("Stage1", function() {
 		this.condition = function() {return true;}
 	});
 	Crafty.e("Bonus").Objective(
-		"Have at least 45 yellow dots on the sceen (%d/45)",
+		"Have at least 45 yellow dots on the sceen (%s/%s)",
 		function() {
 			var numberOfPoints = Crafty("LengthIncrease").length;
-			this.updateText(numberOfPoints);
+			this.updateText(numberOfPoints, 45);
 			return numberOfPoints >= 45;
 		}
 	);
@@ -98,7 +98,15 @@ Crafty.scene("Stage2", function() {
 			return Crafty("PointItem").length === 0;
 		}
 	);
-	// Bonus: collect in the fastest was possible
+	Crafty.e("Bonus").Objective(
+		"Finish before the timer runs out (%s/%s)",
+		function(snake) {
+			var treshold = 2600;
+			var frame = Crafty.frame() - this.startingFrame;
+			this.updateText(frame, treshold);
+			return frame < treshold;
+		}
+	).startingFrame = Crafty.frame();
 });
 
 Crafty.scene("Stage3", function() {

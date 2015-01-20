@@ -548,7 +548,7 @@ Crafty.c("Objective", {
 	updateText: function() {
 		var text = this.textTemplate;
 		for(var i = 0; i < arguments.length; i++) {
-			text = text.replace("%d", arguments[i]);
+			text = text.replace("%s", arguments[i]);
 		};
 		this.text = text;
 	},
