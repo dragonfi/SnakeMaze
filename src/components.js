@@ -130,7 +130,6 @@ Crafty.c("Reappearing", {
 	},
 	randomMove: function() {
 		var validCells = this.emptyCells();
-		console.log(this.randomMask);
 		if (this.randomMask !== undefined) {
 			validCells = validCells.filter(function(coords) {
 				return this.randomMask[coords.row].charAt(coords.col) === "o";
@@ -445,9 +444,10 @@ Crafty.c("Score", {
 		this.lines = [
 			this._snakeLine(0),
 			this._snakeLine(1),
-		];
+		]
 		this.gameIsOver = false;
-		this.objectivesLine = Crafty.e("StatusLine").StatusLine(2);
+		this.bonusLine = Crafty.e("StatusLine").StatusLine(2);
+		this.objectivesLine = Crafty.e("StatusLine").StatusLine(1);
 		this.bind("SnakeChanged", this.updateScore);
 		this.bind("ObjectiveChanged", this.updateObjective);
 		this.bind("GameOver", this.handleGameOver);
@@ -461,25 +461,34 @@ Crafty.c("Score", {
 	_snakeLine: function(lineNumber) {
 		var row = Game.rows + lineNumber;
 		var length = 6;
-		return [
+		var snakeLine = [
 			Crafty.e("TextCell").TextCell(0, row, length),
 			Crafty.e("TextCell").TextCell(5, row, length),
 			Crafty.e("TextCell").TextCell(10, row, length),
 			Crafty.e("TextCell").TextCell(15, row, length),
 			Crafty.e("TextCell").TextCell(20, row, length),
 		];
+		snakeLine.textColor = function(color) {
+			for (var i = 0; i < this.length; i++) {
+				this[i].textColor(color);
+			};
+		}
+		return snakeLine;
 	},
 	_updateSnakeLine: function(line, snake) {
+		var status = "";
+		if (snake.status === "won") {
+			status = " -- Won!";
+			this.lines[line].textColor("#00ff00");
+		} else if (snake.status === "lost") {
+			status = " -- Lost";
+			this.lines[line].textColor("#ff0000");
+		};
 		this.lines[line][0].text(snake.name + ":");
 		this.lines[line][1].text("Score: " + snake.score);
 		this.lines[line][2].text("Length: " + snake.maxLength);
 		this.lines[line][3].text("Speed: " + snake.speed().toFixed(2));
-		var status = "";
-		if (snake.status === "won") {
-			status = " -- Won!";
-		} else if (snake.status === "lost") {
-			status = " -- Lost";
-		};
+
 		this.lines[line][4].text(status);
 	},
 	updateScore: function(snake) {
@@ -490,13 +499,22 @@ Crafty.c("Score", {
 		};
 	},
 	updateObjective: function(objective) {
-		this.objectivesLine.text(objective.text);
+		if (objective.has("TwoPlayerTarget")) {
+			if (objective.completed) {this.bonusLine.textColor("#00ff00")};
+			this.bonusLine.text("Target: " + objective.text);
+		} else if (objective.has("Target")) {
+			if (objective.completed) {this.objectivesLine.textColor("#00ff00")};
+			this.objectivesLine.text("Target: " + objective.text);
+		} else if (objective.has("Bonus")) {
+			if (objective.completed) {this.bonusLine.textColor("#00ff00")};
+			this.bonusLine.text("Bonus: " + objective.text);
+		};
 	},
 	handleGameOver: function() {
 		this.gameIsOver = true;
 		var self = this;
 		Crafty("Snake").get().forEach(function(snake) {
-			Crafty("Objective").get().forEach(function(o) {
+			Crafty("Target").get().forEach(function(o) {
 				if (snake.status != "lost") {
 					snake.status = o.condition(snake) ? "won" : "lost";
 				};
@@ -512,15 +530,49 @@ Crafty.c("Objective", {
 		this.bind("SnakeChanged", this.checkCompletion);
 	},
 	Objective: function(text, condition) {
+		this.textTemplate = text;
 		this.text = text;
 		this.condition = condition;
+		this.condition({score:0});
 		Crafty.trigger("ObjectiveChanged", this);
 		return this;
 	},
 	checkCompletion: function(snake) {
-		if (this.condition(snake)) {
-			Crafty.trigger("GameOver");
+		var conditionMet = this.condition(snake);
+		if (conditionMet) {
+			this.completed = true;
+			this.trigger("ConditionMet", snake);
 		};
+		Crafty.trigger("ObjectiveChanged", this);
+	},
+	updateText: function() {
+		var text = this.textTemplate;
+		for(var i = 0; i < arguments.length; i++) {
+			text = text.replace("%d", arguments[i]);
+		};
+		this.text = text;
+	},
+});
+
+Crafty.c("Bonus", {
+	init: function() {
+		this.requires("Objective");
+	},
+});
+
+Crafty.c("Target", {
+	init: function() {
+		this.requires("Objective");
+		this.bind("ConditionMet", this.triggerGameOver);
+	},
+	triggerGameOver: function(snake) {
+		Crafty.trigger("GameOver");
+	},
+});
+
+Crafty.c("TwoPlayerTarget", {
+	init: function() {
+		this.requires("Target");
 	},
 });
 
@@ -539,7 +591,6 @@ Crafty.c("MenuPoints", {
 			var pi = Crafty.e("PointItem");
 			pi.color = "#ffff00";
 			pi.PointItem(col, row);
-			console.log(pi.color);
 			if (items[i][2].constructor === String) {
 				pi.scene = items[i][2];
 			} else if (items[i][2].constructor === Array) {

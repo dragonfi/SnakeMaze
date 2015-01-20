@@ -54,20 +54,28 @@ Crafty.scene("Stage1", function() {
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5);
 	Crafty.e("Score");
-	Crafty.e("Objective").Objective(
-		"Play until it's visible",
+	Crafty.e("Target").Objective(
+		"Collect the yellow dots",
 		function() {return false;}
 	).bind("NoFreeCellsLeft", function() {
 		this.condition = function() {return true;}
 	});
+	Crafty.e("Bonus").Objective(
+		"Have at least 45 yellow dots on the sceen (%d/45)",
+		function() {
+			var numberOfPoints = Crafty("LengthIncrease").length;
+			this.updateText(numberOfPoints);
+			return numberOfPoints >= 45;
+		}
+	);
 	// Bonus: show the whole text sans one cell (no snake overlap)
 });
 
-Crafty.scene("Stage3", function() {
+Crafty.scene("Stage2", function() {
 	sceneFromLines([
 		"#########################",
-		"#                       #",
-		"#>ooo o  o  o  o  o ooo #",
+		"#>                      #",
+		"# ooo o  o  o  o  o ooo #",
 		"# o   oo o o o o o  o   #",
 		"# ooo o oo ooo oo   ooo #",
 		"#   o o  o o o o o  o   #",
@@ -81,8 +89,11 @@ Crafty.scene("Stage3", function() {
 		"#                       #",
 		"#########################",
 	]);
-	Crafty.e("Objective").Objective(
-		"Collect all point items",
+	var label = Crafty.e("TextCell, Delay").TextCell(0, 1, 25, "center");
+	label.text("Welcome To");
+	label.delay(label.clear, 10000);
+	Crafty.e("Target").Objective(
+		"Collect all yellow dots",
 		function(snake) {
 			return Crafty("PointItem").length === 0;
 		}
@@ -90,26 +101,26 @@ Crafty.scene("Stage3", function() {
 	// Bonus: collect in the fastest was possible
 });
 
-Crafty.scene("Stage2", function() {
+Crafty.scene("Stage3", function() {
 	sceneFromLines([
 		"#########################",
+		"#>                      #",
 		"#                       #",
-		"# #   #oo# ssooo#   #oo #",
-		"# #   #o # s o o## ##o  #",
-		"# # # #oo# s o o# # #oo #",
-		"# ## ##o # s o o#   #o  #",
-		"# #   #oo##ssooo#   #oo #",
-		"# >                     #",
-		"#        ooo sss        #",
-		"#         o  s s        #",
-		"#         o  s s        #",
-		"#         o  s s        #",
-		"#         o  sss        #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
+		"#                       #",
 		"#                       #",
 		"#########################",
 	]);
 	Crafty.e("Score");
-	Crafty.e("Objective").Objective(
+	Crafty.e("Target").Objective(
 		"Collect all point items",
 		function(snake) {
 			return Crafty("PointItem").length === 0;
@@ -125,7 +136,7 @@ Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("PointItem, Reappearing, Decrease").randomMove();
 	Crafty.e("Player1").Snake(1, 1, "right", 5);
 	Crafty.e("Player2").Snake(Game.cols-2, Game.rows-2, "left", 5);
-	Crafty.e("Objective").Objective(
+	Crafty.e("TwoPlayerTarget").Objective(
 		"Reach a score of 10 before the other player",
 		function(snake) {
 			return snake.score >= 10;
@@ -144,6 +155,6 @@ Crafty.scene("MainMenu", function() {
 		[12, 2, one_player_stage_select, "One Player Mode"],
 		[12, 4, "TwoPlayerMode", "Two Player Mode"],
 	]);
-	Crafty.e("Player1").Snake(2, 4, "right", 5);
+	Crafty.e("Player1").Snake(2, 2, "right", 5);
 });
 
