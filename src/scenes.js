@@ -68,7 +68,6 @@ Crafty.scene("Stage1", function() {
 			return numberOfPoints >= 45;
 		}
 	);
-	// Bonus: show the whole text sans one cell (no snake overlap)
 });
 
 Crafty.scene("Stage2", function() {
@@ -93,18 +92,26 @@ Crafty.scene("Stage2", function() {
 	label.text("Welcome To");
 	label.delay(label.clear, 10000);
 	Crafty.e("Target").Objective(
-		"Collect all yellow dots",
+		"Collect all yellow dots (%s remaining)",
 		function(snake) {
-			return Crafty("PointItem").length === 0;
+			var dotsLeft = Crafty("LengthIncrease").length;
+			this.updateText(dotsLeft);
+			return dotsLeft === 0;
 		}
 	);
 	Crafty.e("Bonus").Objective(
-		"Finish before the timer runs out (%s/%s)",
+		"Finish before the timer runs out (%s remaining)",
 		function(snake) {
 			var treshold = 2600;
 			var frame = Crafty.frame() - this.startingFrame;
-			this.updateText(frame, treshold);
-			return frame < treshold;
+			var timeRemaining = treshold - frame;
+			if (timeRemaining < 0) {
+				this.updateText(0);
+				this.fail();
+			} else {
+				this.updateText(timeRemaining);
+			};
+			return timeRemaining > 0 && Crafty("Target").completed;
 		}
 	).startingFrame = Crafty.frame();
 });
@@ -130,7 +137,7 @@ Crafty.scene("Stage3", function() {
 	Crafty.e("Score");
 	Crafty.e("Target").Objective(
 		"Collect all point items",
-		function(snake) {
+		function() {
 			return Crafty("PointItem").length === 0;
 		}
 	);
@@ -146,8 +153,18 @@ Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("Player2").Snake(Game.cols-2, Game.rows-2, "left", 5);
 	Crafty.e("TwoPlayerTarget").Objective(
 		"Reach a score of 10 before the other player",
-		function(snake) {
-			return snake.score >= 10;
+		function() {
+			var p1 = Crafty("Player1");
+			var p2 = Crafty("Player2");
+			if (p1.score >= 10 && p1.status !== "lost") {
+				p1.status = "won";
+				p2.status = "lost";
+			};
+			if (p2.score >= 10 && p1.status !== "lost") {
+				p2.status = "won";
+				p1.status = "lost";
+			};
+			return p1.score >= 10 || p2.score >= 10;
 		}
 	);
 	Crafty.e("Score");

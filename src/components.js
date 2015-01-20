@@ -500,14 +500,21 @@ Crafty.c("Score", {
 	},
 	updateObjective: function(objective) {
 		if (objective.has("TwoPlayerTarget")) {
-			if (objective.completed) {this.bonusLine.textColor("#00ff00")};
+			this.colorLine(this.bonusLine, objective);
 			this.bonusLine.text("Target: " + objective.text);
 		} else if (objective.has("Target")) {
-			if (objective.completed) {this.objectivesLine.textColor("#00ff00")};
+			this.colorLine(this.objectivesLine, objective);
 			this.objectivesLine.text("Target: " + objective.text);
 		} else if (objective.has("Bonus")) {
-			if (objective.completed) {this.bonusLine.textColor("#00ff00")};
+			this.colorLine(this.bonusLine, objective);
 			this.bonusLine.text("Bonus: " + objective.text);
+		};
+	},
+	colorLine: function(line, objective) {
+		if (objective.completed) {
+			line.textColor("#00ff00");
+		} else if (objective.failed) {
+			line.textColor("#ff0000");
 		};
 	},
 	handleGameOver: function() {
@@ -527,7 +534,7 @@ Crafty.c("Score", {
 Crafty.c("Objective", {
 	init: function() {
 		this.requires("2D");
-		this.bind("SnakeChanged", this.checkCompletion);
+		this.bind("EnterFrame", this.checkCompletion);
 	},
 	Objective: function(text, condition) {
 		this.textTemplate = text;
@@ -542,6 +549,7 @@ Crafty.c("Objective", {
 		if (conditionMet) {
 			this.completed = true;
 			this.trigger("ConditionMet", snake);
+			this.unbind("EnterFrame");
 		};
 		Crafty.trigger("ObjectiveChanged", this);
 	},
@@ -551,6 +559,10 @@ Crafty.c("Objective", {
 			text = text.replace("%s", arguments[i]);
 		};
 		this.text = text;
+	},
+	fail: function() {
+		this.failed = true;
+		this.unbind("EnterFrame");
 	},
 });
 
