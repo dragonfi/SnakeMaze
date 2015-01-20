@@ -56,16 +56,18 @@ Crafty.scene("Stage1", function() {
 	Crafty.e("Score");
 	Crafty.e("Target").Objective(
 		"Collect the yellow dots",
-		function() {return false;}
+		function() {}
 	).bind("NoFreeCellsLeft", function() {
-		this.condition = function() {return true;}
+		this.condition = this.complete
 	});
 	Crafty.e("Bonus").Objective(
 		"Have at least 45 yellow dots on the sceen (%s/%s)",
 		function() {
 			var numberOfPoints = Crafty("LengthIncrease").length;
 			this.updateText(numberOfPoints, 45);
-			return numberOfPoints >= 45;
+			if (numberOfPoints >= 45) {
+				this.complete();
+			};
 		}
 	);
 });
@@ -101,17 +103,16 @@ Crafty.scene("Stage2", function() {
 	);
 	Crafty.e("Bonus").Objective(
 		"Finish before the timer runs out (%s remaining)",
-		function(snake) {
+		function() {
 			var treshold = 2600;
 			var frame = Crafty.frame() - this.startingFrame;
 			var timeRemaining = treshold - frame;
-			if (timeRemaining < 0) {
-				this.updateText(0);
+			this.updateText(timeRemaining)
+			if (timeRemaining <= 0) {
 				this.fail();
-			} else {
-				this.updateText(timeRemaining);
+			} else if (Crafty("Target").completed) {
+				this.complete();
 			};
-			return timeRemaining > 0 && Crafty("Target").completed;
 		}
 	).startingFrame = Crafty.frame();
 });
@@ -157,14 +158,16 @@ Crafty.scene("TwoPlayerMode", function() {
 			var p1 = Crafty("Player1");
 			var p2 = Crafty("Player2");
 			if (p1.score >= 10 && p1.status !== "lost") {
+				console.log("P1 won");
 				p1.status = "won";
 				p2.status = "lost";
+				this.complete();
 			};
-			if (p2.score >= 10 && p1.status !== "lost") {
+			if (p2.score >= 10 && p2.status !== "lost") {
 				p2.status = "won";
 				p1.status = "lost";
+				this.complete();
 			};
-			return p1.score >= 10 || p2.score >= 10;
 		}
 	);
 	Crafty.e("Score");
@@ -182,4 +185,3 @@ Crafty.scene("MainMenu", function() {
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5);
 });
-

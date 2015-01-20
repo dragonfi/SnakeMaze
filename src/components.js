@@ -138,7 +138,6 @@ Crafty.c("Reappearing", {
 		var coords = Utils.rand.choice(validCells);
 		if (coords === undefined) {
 			Crafty.trigger("NoFreeCellsLeft");
-			Crafty.trigger("GameOver");
 			return;
 		};
 		this.col = coords.col;
@@ -520,21 +519,32 @@ Crafty.c("Score", {
 	handleGameOver: function() {
 		this.gameIsOver = true;
 		var self = this;
-		Crafty("Snake").get().forEach(function(snake) {
-			Crafty("Target").get().forEach(function(o) {
-				if (snake.status != "lost") {
-					snake.status = o.condition(snake) ? "won" : "lost";
-				};
-			});
+		Crafty("Snake").get().forEach(function(snake){
 			self.updateScore(snake);
 		});
 	},
 });
 
+Crafty.c("GameOverIfNoSnakesArePlaying", {
+	init: function() {
+		this.bind("EnterFrame", this.checkSnakesLost);
+	},
+	checkSnakesLost: function() {
+		var noSnakesArePlaying = Crafty("Snake").get().every(function(snake){
+			return snake.status !== "playing";
+		});
+		if (noSnakesArePlaying) {
+			this.trigger("GameOver");
+			this.unbind("EnterFrame");
+		};
+	},
+});
+
 Crafty.c("Objective", {
 	init: function() {
-		this.requires("2D");
+		this.requires("2D, GameOverIfNoSnakesArePlaying");
 		this.bind("EnterFrame", this.checkCompletion);
+		this.bind("GameOver", this.handleGameOver);
 	},
 	Objective: function(text, condition) {
 		this.textTemplate = text;
@@ -545,12 +555,7 @@ Crafty.c("Objective", {
 		return this;
 	},
 	checkCompletion: function(snake) {
-		var conditionMet = this.condition(snake);
-		if (conditionMet) {
-			this.completed = true;
-			this.trigger("ConditionMet", snake);
-			this.unbind("EnterFrame");
-		};
+		this.condition(snake);
 		Crafty.trigger("ObjectiveChanged", this);
 	},
 	updateText: function() {
@@ -560,9 +565,22 @@ Crafty.c("Objective", {
 		};
 		this.text = text;
 	},
+	handleGameOver: function() {
+		if (this.completed !== true) {
+			this.fail();
+		};
+		this.unbind("EnterFrame");
+	},
 	fail: function() {
 		this.failed = true;
 		this.unbind("EnterFrame");
+		Crafty.trigger("ObjectiveChanged", this);
+	},
+	complete: function() {
+		this.completed = true;
+		this.unbind("EnterFrame");
+		this.trigger("Completed");
+		Crafty.trigger("ObjectiveChanged", this);
 	},
 });
 
@@ -575,9 +593,9 @@ Crafty.c("Bonus", {
 Crafty.c("Target", {
 	init: function() {
 		this.requires("Objective");
-		this.bind("ConditionMet", this.triggerGameOver);
+		this.bind("Completed", this.triggerGameOver);
 	},
-	triggerGameOver: function(snake) {
+	triggerGameOver: function() {
 		Crafty.trigger("GameOver");
 	},
 });
