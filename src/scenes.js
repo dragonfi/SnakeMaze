@@ -54,22 +54,16 @@ Crafty.scene("Stage1", function() {
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5);
 	Crafty.e("Score");
-	Crafty.e("Target").Objective(
-		"Collect the yellow dots",
-		function() {}
-	).bind("NoFreeCellsLeft", function() {
-		this.condition = this.complete
+	Crafty.e("Target").Objective({
+		text: "Collect the yellow dots",
+		winCondition: Crafty("Target").eventFires("NoFreeCellsLeft"),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
 	});
-	Crafty.e("Bonus").Objective(
-		"Have at least 45 yellow dots on the sceen (%s/%s)",
-		function() {
-			var numberOfPoints = Crafty("LengthIncrease").length;
-			this.updateText(numberOfPoints, 45);
-			if (numberOfPoints >= 45) {
-				this.complete();
-			};
-		}
-	);
+	Crafty.e("Bonus").Objective({
+		text: "Have at least 45 yellow dots on the sceen (%s/45)",
+		winCondition: Crafty("Bonus").countAtLeast("LengthIncrease", 45),
+		loseCondition: Crafty("Bonus").eventFires("GameOver"),
+	});
 });
 
 Crafty.scene("Stage2", function() {
@@ -93,34 +87,22 @@ Crafty.scene("Stage2", function() {
 	var label = Crafty.e("TextCell, Delay").TextCell(0, 1, 25, "center");
 	label.text("Welcome To");
 	label.delay(label.clear, 10000);
-	Crafty.e("Target").Objective(
-		"Collect all yellow dots (%s remaining)",
-		function(snake) {
-			var dotsLeft = Crafty("LengthIncrease").length;
-			this.updateText(dotsLeft);
-			return dotsLeft === 0;
-		}
-	);
-	Crafty.e("Bonus").Objective(
-		"Finish before the timer runs out (%s remaining)",
-		function() {
-			var treshold = 2600;
-			var frame = Crafty.frame() - this.startingFrame;
-			var timeRemaining = treshold - frame;
-			this.updateText(timeRemaining)
-			if (timeRemaining <= 0) {
-				this.fail();
-			} else if (Crafty("Target").completed) {
-				this.complete();
-			};
-		}
-	).startingFrame = Crafty.frame();
+	Crafty.e("Target").Objective({
+		text: "Collect all yellow dots (%s remaining)",
+		winCondition: Crafty("Target").countAtMost("LengthIncrease", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Finish before the timer runs out (%s remaining)",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").timerExpires(2600),
+	});
 });
 
 Crafty.scene("Stage3", function() {
 	sceneFromLines([
 		"#########################",
-		"#>                      #",
+		"#>       o              #",
 		"#                       #",
 		"#                       #",
 		"#                       #",
@@ -136,12 +118,16 @@ Crafty.scene("Stage3", function() {
 		"#########################",
 	]);
 	Crafty.e("Score");
-	Crafty.e("Target").Objective(
-		"Collect all point items",
-		function() {
-			return Crafty("PointItem").length === 0;
-		}
-	);
+	Crafty.e("Target").Objective({
+		text: "Collect all point items",
+		winCondition: Crafty("Target").countAtMost("PointItem", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Before the timer runs out %s",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").timerExpires(250),
+	});
 	// Bonus: collect all yellow at max speed
 });
 
@@ -152,24 +138,11 @@ Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("PointItem, Reappearing, Decrease").randomMove();
 	Crafty.e("Player1").Snake(1, 1, "right", 5);
 	Crafty.e("Player2").Snake(Game.cols-2, Game.rows-2, "left", 5);
-	Crafty.e("TwoPlayerTarget").Objective(
-		"Reach a score of 10 before the other player",
-		function() {
-			var p1 = Crafty("Player1");
-			var p2 = Crafty("Player2");
-			if (p1.score >= 10 && p1.status !== "lost") {
-				console.log("P1 won");
-				p1.status = "won";
-				p2.status = "lost";
-				this.complete();
-			};
-			if (p2.score >= 10 && p2.status !== "lost") {
-				p2.status = "won";
-				p1.status = "lost";
-				this.complete();
-			};
-		}
-	);
+	Crafty.e("TwoPlayerTarget").Objective({
+		text: "Reach a score of 10 before the other player",
+		winCondition: Crafty("TwoPlayerTarget").competeForPoints(10),
+		loseCondition: Crafty("TwoPlayerTarget").eventFires("GameOver"),
+	});
 	Crafty.e("Score");
 });
 

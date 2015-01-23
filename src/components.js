@@ -540,22 +540,63 @@ Crafty.c("GameOverIfNoSnakesArePlaying", {
 	},
 });
 
+Crafty.c("ObjectiveConditions", {
+	eventFires: function(eventName) {
+		this.uniqueBind(eventName, function() {
+			this["_eventFired_" + eventName] = true;
+		});
+		return function() {
+			if (this["_eventFired_" + eventName]) {
+				this.unbind(eventName);
+				return true;
+			};
+		};
+	},
+	countAtLeast: function(componentName, targetNumber) {
+		return function() {
+			var number = Crafty(componentName).length;
+			this.updateText(number);
+			return number >= targetNumber;
+		};
+	},
+	countAtMost: function(componentName, targetNumber) {
+		return function() {
+			var number = Crafty(componentName).length;
+			this.updateText(number);
+			return number <= targetNumber;
+		};
+	},
+	timerExpires: function(treshold) {
+		this.firstFrame = Crafty.frame();
+		return function() {
+			var currentFrame = Crafty.frame() - this.firstFrame;
+			var timeRemaining = treshold - currentFrame;
+			this.updateText(timeRemaining);
+			return timeRemaining <= 0;
+		};
+	},
+});
+
 Crafty.c("Objective", {
 	init: function() {
-		this.requires("2D, GameOverIfNoSnakesArePlaying");
+		this.requires("2D, ObjectiveConditions, GameOverIfNoSnakesArePlaying");
 		this.bind("EnterFrame", this.checkCompletion);
-		this.bind("GameOver", this.handleGameOver);
 	},
-	Objective: function(text, condition) {
-		this.textTemplate = text;
-		this.text = text;
-		this.condition = condition;
-		this.condition({score:0});
+	Objective: function(attrs) {
+		this.textTemplate = attrs.text;
+		this.text = attrs.text;
+		this.winCondition = attrs.winCondition;
+		this.loseCondition = attrs.loseCondition;
+		this.checkCompletion();
 		Crafty.trigger("ObjectiveChanged", this);
 		return this;
 	},
-	checkCompletion: function(snake) {
-		this.condition(snake);
+	checkCompletion: function() {
+		if (this.winCondition()) {
+			this.complete();
+		} else if (this.loseCondition()) {
+			this.fail();
+		};
 		Crafty.trigger("ObjectiveChanged", this);
 	},
 	updateText: function() {
@@ -564,12 +605,6 @@ Crafty.c("Objective", {
 			text = text.replace("%s", arguments[i]);
 		};
 		this.text = text;
-	},
-	handleGameOver: function() {
-		if (this.completed !== true) {
-			this.fail();
-		};
-		this.unbind("EnterFrame");
 	},
 	fail: function() {
 		this.failed = true;
@@ -596,6 +631,8 @@ Crafty.c("Target", {
 		this.bind("Completed", this.triggerGameOver);
 	},
 	triggerGameOver: function() {
+		this.unbind("GameOver");
+		Crafty.trigger("GameWon");
 		Crafty.trigger("GameOver");
 	},
 });
@@ -603,6 +640,23 @@ Crafty.c("Target", {
 Crafty.c("TwoPlayerTarget", {
 	init: function() {
 		this.requires("Target");
+	},
+	competeForPoints: function(target) {
+		var p1 = Crafty("Player1");
+		var p2 = Crafty("Player2");
+		return function() {
+			var p1won = (p1.score >= 10 && p1.status !== "lost");
+			if (p1won) {
+				p1.status = "won";
+				p2.status = "lost";
+			};
+			var p2won = (p2.score >= 10 && p2.status !== "lost");
+			if (p2won) {
+				p2.status = "won";
+				p1.status = "lost";
+			};
+			return p1won || p2won;
+		};
 	},
 });
 
