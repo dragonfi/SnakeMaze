@@ -134,6 +134,38 @@ Crafty.scene("DemoStage", function() {
 	// Bonus: collect all yellow at max speed
 });
 
+Crafty.scene("Racetrack", function() {
+	sceneFromLines([
+		"#########################",
+		"#               #       #",
+		"#    s>s s s    #   s   #",
+		"#  s         s  #  s s  #",
+		"#   #########   #   #   #",
+		"# s #       # s # s # s #",
+		"#   #   s   #   #   #   #",
+		"# s #  s s  #  s s  # s #",
+		"#   #   #   #   s   #   #",
+		"# s # s # s #       # s #",
+		"#   #   #   #########   #",
+		"#  s s  #  s         s  #",
+		"#   s   #    s  s  s    #",
+		"#       #               #",
+		"#########################",
+	]);
+	Crafty.e("Score");
+	Crafty("Snake").attr("maxLength", 5);
+	Crafty.e("Target").Objective({
+		text: "Collect all point items %s",
+		winCondition: Crafty("Target").countAtMost("PointItem", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Before the timer runs out %s",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").timerExpires(1200),
+	});
+});
+
 Crafty.scene("Rooms", function() {
 	sceneFromLines([
 		"#########################",
@@ -229,8 +261,8 @@ Crafty.scene("WithLove", function() {
 
 // Scene: Gliders
 // Scene: Pac-Man
-// Scene: Racetrack
 // Scene: 1GAM
+// Scene: Bonus: collect all yellow at max speed
 
 Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("BorderWalls");
@@ -255,6 +287,7 @@ Crafty.scene("MainMenu", function() {
 		[2, 8, "Corridors", "Stage 4"],
 		[2, 10, "WithLove", "Stage 5"],
 		[2, 12, "Rooms", "Stage 6"],
+		[2, 14, "Racetrack", "Stage 7"],
 	];
 	Crafty.e("MenuPoints").MenuPoints([
 		[12, 2, one_player_stage_select, "One Player Mode"],
