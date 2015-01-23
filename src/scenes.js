@@ -12,6 +12,9 @@ function sceneFromLines(lines) {
 		"s": function(col, row) {
 			Crafty.e("PointItem, SpeedIncrease").PointItem(col, row);
 		},
+		"r": function(col, row) {
+			Crafty.e("PointItem, Decrease").PointItem(col, row);
+		},
 		" ": function(col, row) {},
 	};
 	lines.forEach(function(line, row) {
@@ -32,7 +35,7 @@ Crafty.scene("SetUp", function() {
 	}, 1000);
 });
 
-Crafty.scene("Stage1", function() {
+Crafty.scene("Hello", function() {
 	Crafty.e("BorderWalls");
 	var pi = Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(6, 2)
 	pi.attr("randomMask", [
@@ -66,7 +69,7 @@ Crafty.scene("Stage1", function() {
 	});
 });
 
-Crafty.scene("Stage2", function() {
+Crafty.scene("Welcome", function() {
 	sceneFromLines([
 		"#########################",
 		"#>                      #",
@@ -99,7 +102,7 @@ Crafty.scene("Stage2", function() {
 	});
 });
 
-Crafty.scene("Stage3", function() {
+Crafty.scene("DemoStage", function() {
 	sceneFromLines([
 		"#########################",
 		"#>       o              #",
@@ -131,6 +134,99 @@ Crafty.scene("Stage3", function() {
 	// Bonus: collect all yellow at max speed
 });
 
+Crafty.scene("Rooms", function() {
+	sceneFromLines([
+		"#########################",
+		"#o                  o#oo#",
+		"# ################## #  #",
+		"# #o     o#o   o#    #  #",
+		"# #o     o#o   o# ####  #",
+		"# #### ###### ### #### ##",
+		"#                       #",
+		"#>     r  r  r  r  r  r #",
+		"# #### ######## #### ####",
+		"# #o       o#rr #o     o#",
+		"# #o       o#rr #o     o#",
+		"# #o       o#rr #o     o#",
+		"# ############# #o     o#",
+		"#o             o#o     o#",
+		"#########################",
+	]);
+	Crafty.e("Score");
+	Crafty.e("Target").Objective({
+		text: "Collect all yellow dots (%s remaining)",
+		winCondition: Crafty("Target").countAtMost("LengthIncrease", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Do not collect any red dots",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").eventFires("BadItemEaten"),
+	});
+});
+
+Crafty.scene("Corridors", function() {
+	sceneFromLines([
+		"#########################",
+		"#ooooooooooooooooooooooo#",
+		"#o#####################o#",
+		"#o#ooooo#ooooooo#ooooooo#",
+		"#o#o###o#o#####o#o#######",
+		"#o#o#ooo#ooo###o#ooooooo#",
+		"#o#o#o#####o###o#######o#",
+		"#>oooooooooooooooooooooo#",
+		"#o#o#o#####o#o#o#o#######",
+		"#o#o#ooooooo#o#o#o#ooooo#",
+		"#o#o#########o#o#o#o###o#",
+		"#o#ooooooooooo#o#o#ooo#o#",
+		"#o#############o#o#####o#",
+		"#ooooooooooooooo#ooooooo#",
+		"#########################",
+	]);
+	Crafty.e("Score");
+	Crafty.e("Target").Objective({
+		text: "Collect all yellow dots (%s remaining)",
+		winCondition: Crafty("Target").countAtMost("LengthIncrease", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Before the timer runs out %s",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").timerExpires(2500),
+	});
+});
+
+Crafty.scene("WithLove", function() {
+	sceneFromLines([
+		"                         ",
+		"   o     o o ooo o o     ",
+		"    o o o  o  o  ooo     ",
+		"     o o   o  o  o o     ",
+		"                         ",
+		"       rrr   rrr         ",
+		"      r   r r   r        ",
+		"     r     r     r       ",
+		"     r>          r       ",
+		"     r           r       ",
+		"      r         r        ",
+		"       r       r         ",
+		"        r     r          ",
+		"         r   r           ",
+		"          r r            ",
+	]);
+	Crafty.e("Score");
+	Crafty.e("Target").Objective({
+		text: "Collect all yellow dots (%s remaining)",
+		winCondition: Crafty("Target").countAtMost("LengthIncrease", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Do not collect any red dots",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").eventFires("BadItemEaten"),
+	});
+});
+
 Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("BorderWalls");
 	Crafty.e("PointItem, Reappearing, LengthIncrease").randomMove();
@@ -148,9 +244,12 @@ Crafty.scene("TwoPlayerMode", function() {
 
 Crafty.scene("MainMenu", function() {
 	one_player_stage_select = [
-		[2, 2, "Stage1", "Stage 1"],
-		[2, 4, "Stage2", "Stage 2"],
-		[2, 6, "Stage3", "Stage 3"],
+		[2, 2, "Hello", "Stage 1"],
+		[2, 4, "Welcome", "Stage 2"],
+		[2, 6, "DemoStage", "Stage 3"],
+		[2, 8, "Corridors", "Stage 4"],
+		[2, 10, "WithLove", "Stage 5"],
+		[2, 12, "Rooms", "Stage 6"],
 	];
 	Crafty.e("MenuPoints").MenuPoints([
 		[12, 2, one_player_stage_select, "One Player Mode"],

@@ -276,6 +276,7 @@ Crafty.c("Snake", {
 				this.speed(this.speed() - Game.speedDelta);
 				this.maxLength -= 1;
 				this.score -= 4;
+				Crafty.trigger("BadItemEaten");
 				if (this.maxLength < 1) {
 					this.status = "lost";
 					this.stopMovement();
