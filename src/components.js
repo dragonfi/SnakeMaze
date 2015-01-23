@@ -283,7 +283,7 @@ Crafty.c("Snake", {
 				};
 			};
 			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
-		} else if (obj.has("Wall") || obj.has("Snake")) {
+		} else if ((obj.has("Wall") || obj.has("Snake")) && !this.invincible) {
 			this.status = "lost";
 			this.stopMovement();
 		};

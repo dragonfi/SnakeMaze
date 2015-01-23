@@ -260,5 +260,5 @@ Crafty.scene("MainMenu", function() {
 		[12, 2, one_player_stage_select, "One Player Mode"],
 		[12, 4, "TwoPlayerMode", "Two Player Mode"],
 	]);
-	Crafty.e("Player1").Snake(2, 2, "right", 5);
+	Crafty.e("Player1").Snake(2, 2, "right", 5).invincible = true;
 });
