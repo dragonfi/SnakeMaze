@@ -227,6 +227,11 @@ Crafty.scene("WithLove", function() {
 	});
 });
 
+// Scene: Gliders
+// Scene: Pac-Man
+// Scene: Racetrack
+// Scene: 1GAM
+
 Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("BorderWalls");
 	Crafty.e("PointItem, Reappearing, LengthIncrease").randomMove();
