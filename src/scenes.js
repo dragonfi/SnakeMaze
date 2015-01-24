@@ -177,11 +177,11 @@ Crafty.scene("Rooms", function() {
 		"#                       #",
 		"#>     r  r  r  r  r  r #",
 		"# #### ######## #### ####",
-		"# #o       o#rr #o     o#",
-		"# #o       o#rr #o     o#",
+		"# #o       o#rr #ooo ooo#",
+		"# #o#######o#rr #o     o#",
 		"# #o       o#rr #o     o#",
 		"# ############# #o     o#",
-		"#o             o#o     o#",
+		"#o             o#ooooooo#",
 		"#########################",
 	]);
 	Crafty.e("Score");
@@ -280,15 +280,20 @@ Crafty.scene("TwoPlayerMode", function() {
 });
 
 Crafty.scene("MainMenu", function() {
-	one_player_stage_select = [
-		[2, 2, "Hello", "Stage 1"],
-		[2, 4, "Welcome", "Stage 2"],
-		[2, 6, "DemoStage", "Stage 3"],
-		[2, 8, "Corridors", "Stage 4"],
-		[2, 10, "WithLove", "Stage 5"],
-		[2, 12, "Rooms", "Stage 6"],
-		[2, 14, "Racetrack", "Stage 7"],
-	];
+	function menuEntries() {
+		function toDisplayedName(index, name) {
+			return index + ": " + name.replace(/([A-Z])/g, " $1");
+		};
+		entries = [];
+		for(var i=0; i<arguments.length; i++){
+			var scene = arguments[i];
+			entries.push([2, i*2 + 2, scene, toDisplayedName(i + 1, scene)]);
+		};
+		return entries;
+	};
+	one_player_stage_select = menuEntries(
+		"Hello", "Welcome", "DemoStage", "Corridors",
+		"WithLove", "Rooms", "Racetrack");
 	Crafty.e("MenuPoints").MenuPoints([
 		[12, 2, one_player_stage_select, "One Player Mode"],
 		[12, 4, "TwoPlayerMode", "Two Player Mode"],
