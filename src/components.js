@@ -1,3 +1,13 @@
+var Color = {
+	black: "#000000",
+	grey: "#cccccc",
+	white: "#ffffff",
+	yellow: "#ffff00",
+	green: "#00ff00",
+	blue: "#00ccff",
+	red: "#ff0000",
+};
+
 Crafty.c("Cell", {
 	init: function() {
 		this.requires("2D, Canvas, Color, Tween, Delay");
@@ -19,7 +29,7 @@ Crafty.c("Cell", {
 			w: 0,
 			h: 0,
 		};
-		this.attr(this._orig_attrs).color("#000000");
+		this.attr(this._orig_attrs).color(Color.black);
 		this.attr(this._null_attrs).color(parent.color);
 		this.tween(this._orig_attrs, Game.cellDelay);
 		this.trigger("CellInitialized");
@@ -102,7 +112,7 @@ Crafty.c("Grid", {
 Crafty.c("PointItem", {
 	init: function() {
 		this.requires("Grid");
-		this.color = "#ffffff";
+		this.color = Color.white;
 		this.bind("PointItemEaten", function(args) {
 			if (args.pointItem === this) {
 				this.clearCells();
@@ -161,28 +171,28 @@ Crafty.c("Neumann", {
 Crafty.c("LengthIncrease", {
 	init: function() {
 		this.requires("PointItem, ScoreIncrease");
-		this.color = "#ffff00";
+		this.color = Color.yellow;
 	},
 });
 
 Crafty.c("SpeedIncrease", {
 	init: function() {
 		this.requires("PointItem, ScoreIncrease");
-		this.color = "#0000ff";
+		this.color = Color.blue;
 	},
 });
 
 Crafty.c("Decrease", {
 	init: function() {
 		this.requires("PointItem");
-		this.color = "#ff0000";
+		this.color = Color.red;
 	},
 });
 
 Crafty.c("Wall", {
 	init: function() {
 		this.requires("Grid");
-		this.color = "#aaaaaa";
+		this.color = Color.grey;
 	},
 	Wall: function(col, row) {
 		this.createCell(col, row, this);
@@ -341,7 +351,7 @@ Crafty.c("Controls", {
 
 Crafty.c("Player1", {
 	name: "Green",
-	color: "#00ff00",
+	color: Color.green,
 	init: function() {
 		this.requires("Controls, Snake");
 		this.keymap = {
@@ -355,7 +365,7 @@ Crafty.c("Player1", {
 
 Crafty.c("Player2", {
 	name: "Red",
-	color: "#ff0000",
+	color: Color.red,
 	init: function() {
 		this.requires("Controls, Snake");
 		this.keymap = {
@@ -418,7 +428,7 @@ Crafty.c("TextCell", {
 		}).textFont({
 			size: Game.cellSize,
 			family: "Orbitron",
-		}).textColor("#ffffff");
+		}).textColor(Color.white);
 		this.tween({alpha: 1}, Game.cellDelay);
 		this.bind("ClearGame", this.clear);
 		return this;
@@ -479,10 +489,10 @@ Crafty.c("Score", {
 		var status = "";
 		if (snake.status === "won") {
 			status = " -- Won!";
-			this.lines[line].textColor("#00ff00");
+			this.lines[line].textColor(Color.green);
 		} else if (snake.status === "lost") {
 			status = " -- Lost";
-			this.lines[line].textColor("#ff0000");
+			this.lines[line].textColor(Color.red);
 		};
 		this.lines[line][0].text(snake.name + ":");
 		this.lines[line][1].text("Score: " + snake.score);
@@ -512,9 +522,9 @@ Crafty.c("Score", {
 	},
 	colorLine: function(line, objective) {
 		if (objective.completed) {
-			line.textColor("#00ff00");
+			line.textColor(Color.green);
 		} else if (objective.failed) {
-			line.textColor("#ff0000");
+			line.textColor(Color.red);
 		};
 	},
 	handleGameOver: function() {
@@ -674,7 +684,7 @@ Crafty.c("MenuPoints", {
 			var row = items[i][1];
 			var text = items[i][3];
 			var pi = Crafty.e("PointItem");
-			pi.color = "#ffff00";
+			pi.color = Color.yellow;
 			pi.PointItem(col, row);
 			if (items[i][2].constructor === String) {
 				pi.scene = items[i][2];
