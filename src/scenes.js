@@ -172,7 +172,7 @@ Crafty.scene("Rooms", function() {
 		"#o                  o#oo#",
 		"# ################## #  #",
 		"# #o     o#o   o#    #  #",
-		"# #o     o#o   o# ####  #",
+		"# #o     o#o   o# #### ##",
 		"# #### ###### ### #### ##",
 		"#                       #",
 		"#>     r  r  r  r  r  r #",
@@ -199,21 +199,21 @@ Crafty.scene("Rooms", function() {
 
 Crafty.scene("Corridors", function() {
 	sceneFromLines([
-		"#########################",
-		"#ooooooooooooooooooooooo#",
-		"#o#####################o#",
-		"#o#ooooo#ooooooo#ooooooo#",
-		"#o#o###o#o#####o#o#######",
-		"#o#o#ooo#ooo###o#ooooooo#",
-		"#o#o#o#####o###o#######o#",
-		"#>oooooooooooooooooooooo#",
-		"#o#o#o#####o#o#o#o#######",
-		"#o#o#ooooooo#o#o#o#ooooo#",
-		"#o#o#########o#o#o#o###o#",
-		"#o#ooooooooooo#o#o#ooo#o#",
-		"#o#############o#o#####o#",
-		"#ooooooooooooooo#ooooooo#",
-		"#########################",
+		"    # # # # # # # # #    ",
+		"##### # # # # # # # #####",
+		"     o# # # # # # #o     ",
+		"####### # # # # # #######",
+		"       o# # # # #o       ",
+		"######### # # # #########",
+		"         o# # #o         ",
+		"########### # ###########",
+		"           o#o >         ",
+		"    #################    ",
+		"ss  #o     o#o o#o o#  ss",
+		" s  # ##### # # # # #  s ",
+		" s  # #o o# # # # # #  s ",
+		"ss  # # # # # # # # #  ss",
+		"    # # # # # # # # #    ",
 	]);
 	Crafty.e("Score");
 	Crafty.e("Target").Objective({
@@ -224,7 +224,7 @@ Crafty.scene("Corridors", function() {
 	Crafty.e("Bonus").Objective({
 		text: "Before the timer runs out %s",
 		winCondition: Crafty("Bonus").eventFires("GameWon"),
-		loseCondition: Crafty("Bonus").timerExpires(2500),
+		loseCondition: Crafty("Bonus").timerExpires(1500),
 	});
 });
 
@@ -259,7 +259,7 @@ Crafty.scene("WithLove", function() {
 	});
 });
 
-// Scene: Gliders
+// Scene: Gliders (Still Life)
 // Scene: Pac-Man
 // Scene: 1GAM
 // Scene: Bonus: collect all yellow at max speed
@@ -292,8 +292,8 @@ Crafty.scene("MainMenu", function() {
 		return entries;
 	};
 	one_player_stage_select = menuEntries(
-		"Hello", "Welcome", "DemoStage", "Corridors",
-		"WithLove", "Rooms", "Racetrack");
+		"Hello", "Welcome", "WithLove", "Racetrack",
+		"Rooms", "Corridors", "DemoStage");
 	Crafty.e("MenuPoints").MenuPoints([
 		[12, 2, one_player_stage_select, "One Player Mode"],
 		[12, 4, "TwoPlayerMode", "Two Player Mode"],
