@@ -248,7 +248,7 @@ Crafty.c("Snake", {
 		return this;
 	},
 	speed: function(value) {
-		if (value !== undefined) {
+		if (value !== undefined && value > 0) {
 			this._speed = value;
 			this._recalculateMoveDelay();
 		};
@@ -346,6 +346,9 @@ Crafty.c("Controls", {
 				this.keymap[key].call(this);
 			};
 		};
+	},
+	remove: function() {
+		this.unbind("KeyDown");
 	},
 });
 

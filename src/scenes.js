@@ -39,21 +39,21 @@ Crafty.scene("Hello", function() {
 	Crafty.e("BorderWalls");
 	var pi = Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(6, 2)
 	pi.attr("randomMask", [
-		"#########################",
-		"#                       #",
-		"# >                     #",
-		"#                       #",
-		"#                       #",
-		"# o o ooo o   o   ooo o #",
-		"# o o o   o   o   o o o #",
-		"# ooo ooo o   o   o o o #",
-		"# o o o   o   o   o o   #",
-		"# o o ooo ooo ooo ooo o #",
-		"#                       #",
-		"#                       #",
-		"#                       #",
-		"#                       #",
-		"#########################",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"  o o ooo o   o   ooo o  ",
+		"  o o o   o   o   o o o  ",
+		"  ooo ooo o   o   o o o  ",
+		"  o o o   o   o   o o    ",
+		"  o o ooo ooo ooo ooo o  ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5);
 	Crafty.e("Score");
@@ -107,7 +107,7 @@ Crafty.scene("DemoStage", function() {
 		"#########################",
 		"#>       o              #",
 		"#                       #",
-		"#                       #",
+		"#     s  r              #",
 		"#                       #",
 		"#                       #",
 		"#                       #",
@@ -155,12 +155,12 @@ Crafty.scene("Racetrack", function() {
 	Crafty.e("Score");
 	Crafty("Snake").attr("maxLength", 5);
 	Crafty.e("Target").Objective({
-		text: "Collect all point items %s",
+		text: "Collect all point items (%s remaining)",
 		winCondition: Crafty("Target").countAtMost("PointItem", 0),
 		loseCondition: Crafty("Target").eventFires("GameOver"),
 	});
 	Crafty.e("Bonus").Objective({
-		text: "Before the timer runs out %s",
+		text: "Before the timer runs out (%s remaining)",
 		winCondition: Crafty("Bonus").eventFires("GameWon"),
 		loseCondition: Crafty("Bonus").timerExpires(1200),
 	});
@@ -259,10 +259,98 @@ Crafty.scene("WithLove", function() {
 	});
 });
 
+Crafty.scene("StillLife", function() {
+	sceneFromLines([
+		"                         ",
+		" >                       ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+		"                         ",
+	]);
+
+	Crafty.e("Score");
+	Crafty.e("Target").Objective({
+		text: "Collect all point items",
+		winCondition: Crafty("Target").countAtMost("PointItem", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Before the timer runs out %s",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").timerExpires(250),
+	});
+	// Bonus: collect all yellow at max speed
+});
+
+Crafty.scene("ThankYou", function() {
+	sceneFromLines([
+		">oooooooooooooooooooooooo",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"o                       o",
+		"ooooooooooooooooooooooooo",
+	]);
+	Crafty.bind("PointItemEaten", function(attrs) {
+		if (!attrs.pointItem.has("LengthIncrease")) {
+			return;
+		};
+		for (var i = 0; i < 2; i++) {
+			var textItem = Crafty.e("Reappearing, Decrease");
+			textItem.attr("randomMask", [
+				"                         ",
+				"                         ",
+				"  ooo o  o  o  o  o o o  ",
+				"   o  o  o o o oo o oo   ",
+				"   o  oooo ooo o oo o    ",
+				"   o  o  o o o o  o oo   ",
+				"   o  o  o o o o  o o o  ",
+				"                         ",
+				"      o o ooo o o o      ",
+				"      o o o o o o o      ",
+				"       o  o o o o o      ",
+				"       o  o o o o        ",
+				"       o  ooo ooo o      ",
+				"                         ",
+				"                         ",
+			]).randomMove();
+		};
+	});
+	Crafty.e("Score");
+	Crafty.e("Target").Objective({
+		text: "Collect all yellow dots (%s remaining)",
+		winCondition: Crafty("Target").countAtMost("LengthIncrease", 0),
+		loseCondition: Crafty("Target").eventFires("GameOver"),
+	});
+	Crafty.e("Bonus").Objective({
+		text: "Do not collect any red dots",
+		winCondition: Crafty("Bonus").eventFires("GameWon"),
+		loseCondition: Crafty("Bonus").eventFires("BadItemEaten"),
+	});
+});
+
 // Scene: Gliders (Still Life)
 // Scene: Pac-Man
 // Scene: 1GAM
-// Scene: Bonus: collect all yellow at max speed
 
 Crafty.scene("TwoPlayerMode", function() {
 	Crafty.e("BorderWalls");
@@ -293,7 +381,7 @@ Crafty.scene("MainMenu", function() {
 	};
 	one_player_stage_select = menuEntries(
 		"Hello", "Welcome", "WithLove", "Racetrack",
-		"Rooms", "Corridors", "DemoStage");
+		"Rooms", "Corridors", "ThankYou");
 	Crafty.e("MenuPoints").MenuPoints([
 		[12, 2, one_player_stage_select, "One Player Mode"],
 		[12, 4, "TwoPlayerMode", "Two Player Mode"],
