@@ -388,8 +388,12 @@ Crafty.c("Player2", {
 Crafty.c("SceneChanger", {
 	init: function() {
 		this.requires("Delay");
+		this.bind("SceneChange", this.handleSceneChange);
 	},
 	restartCurrentScene: function() {
+		if (this.currentScene === undefined) {
+			this.currentScene = Crafty._current;
+		};
 		this.changeScene(this.currentScene);
 	},
 	changeScene: function(name) {
@@ -397,6 +401,9 @@ Crafty.c("SceneChanger", {
 		this.delay(function() {
 			Crafty.scene(name);
 		}, Game.cellDelay);
+	},
+	handleSceneChange: function(data) {
+		this.currentScene = data.newScene;
 	},
 });
 
@@ -408,11 +415,6 @@ Crafty.c("RestartOnSpace", {
 			"ESC": this.changeScene.bind(this, "MainMenu"),
 			"M": this.changeScene.bind(this, "MainMenu"),
 		};
-		this._currentScene = undefined;
-		this.bind("SceneChange", this.handleSceneChange);
-	},
-	handleSceneChange: function(data) {
-		this.currentScene = data.newScene;
 	},
 });
 
@@ -691,8 +693,7 @@ Crafty.c("MenuPoints", {
 			var col = items[i][0];
 			var row = items[i][1];
 			var text = items[i][3];
-			var pi = Crafty.e("PointItem");
-			pi.color = Color.yellow;
+			var pi = Crafty.e("PointItem, LengthIncrease");
 			pi.PointItem(col, row);
 			if (items[i][2].constructor === String) {
 				pi.scene = items[i][2];
@@ -713,17 +714,31 @@ Crafty.c("MenuPoints", {
 		this.cells = [];
 	},
 	handleSelection: function(data) {
-		if (data.pointItem.scene !== undefined) {
+		if (data.pointItem.back) {
+			this.restartCurrentScene();
+		} else if (data.pointItem.scene !== undefined) {
 			this.changeScene(data.pointItem.scene);
 		} else if (data.pointItem.menuEntries !== undefined) {
 			this.clearCells();
 			this.MenuPoints(data.pointItem.menuEntries);
+			this.addResetItem();
 		};
+	},
+	addResetItem: function() {
+		var pi = Crafty.e("PointItem, LengthIncrease");
+		pi.PointItem(13, 13);
+		pi.back = true;
+		var tc = Crafty.e("TextCell").TextCell(14, 13).text("Back");
+		this.cells.push(tc);
+		this.cells.push.apply(this.cells, pi.cells);
 	},
 });
 
 Crafty.c("Beeper", {
 	init: function() {
+		//TODO: Crafty has a bug where it creates a new resource
+		//TODO: for each sound played. Not playing a sound for each
+		//TODO: tick mitigates this problem to some degree.
 		//this.bind("SnakeMoved", this.snakeMoveBeep);
 		this.bind("BadItemEaten", this.badItemBeep);
 		this.bind("SpeedItemEaten", this.goodItemBeep);
