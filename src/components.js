@@ -273,11 +273,14 @@ Crafty.c("Snake", {
 	},
 	_handleCollision: function(obj) {
 		if (obj.has("PointItem")) {
+			var event_data = {snake: this, pointItem: obj};
 			if (obj.has("LengthIncrease")) {
 				this.maxLength += 1;
+				Crafty.trigger("LengthItemEaten", event_data);
 			};
 			if (obj.has("SpeedIncrease")) {
 				this.speed(this.speed() + Game.speedDelta);
+				Crafty.trigger("SpeedItemEaten", event_data);
 			};
 			if (obj.has("ScoreIncrease")) {
 				this.score += 1;
@@ -286,16 +289,17 @@ Crafty.c("Snake", {
 				this.speed(this.speed() - Game.speedDelta);
 				this.maxLength -= 1;
 				this.score -= 4;
-				Crafty.trigger("BadItemEaten");
+				Crafty.trigger("BadItemEaten", event_data);
 				if (this.maxLength < 1) {
 					this.status = "lost";
 					this.stopMovement();
 				};
 			};
-			Crafty.trigger("PointItemEaten", {snake: this, pointItem: obj});
+			Crafty.trigger("PointItemEaten", event_data);
 		} else if ((obj.has("Wall") || obj.has("Snake")) && !this.invincible) {
 			this.status = "lost";
 			this.stopMovement();
+			Crafty.trigger("WallHit");
 		};
 		Crafty.trigger("SnakeChanged", this);
 	},
@@ -313,6 +317,7 @@ Crafty.c("Snake", {
 		this.col = Utils.mod(this.col + delta.col, Game.cols);
 		this.row = Utils.mod(this.row + delta.row, Game.rows);
 		this._addSegment(this.col, this.row);
+		Crafty.trigger("SnakeMoved");
 	},
 	changeDirection: function(newDir) {
 		if (this._opposite_direction[this.dir] === newDir) {
@@ -714,5 +719,24 @@ Crafty.c("MenuPoints", {
 			this.clearCells();
 			this.MenuPoints(data.pointItem.menuEntries);
 		};
+	},
+});
+
+Crafty.c("Beeper", {
+	init: function() {
+		//this.bind("SnakeMoved", this.snakeMoveBeep);
+		this.bind("BadItemEaten", this.badItemBeep);
+		this.bind("SpeedItemEaten", this.goodItemBeep);
+		this.bind("LengthItemEaten", this.goodItemBeep);
+		this.bind("WallHit", this.badItemBeep);
+	},
+	snakeMoveBeep: function() {
+		Crafty.audio.play("blip");
+	},
+	badItemBeep: function() {
+		Crafty.audio.play("bloop");
+	},
+	goodItemBeep: function() {
+		Crafty.audio.play("tik");
 	},
 });

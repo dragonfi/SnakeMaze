@@ -30,6 +30,7 @@ function sceneFromLines(lines) {
 
 Crafty.scene("SetUp", function() {
 	Crafty.e("RestartOnSpace");
+	Crafty.e("Beeper");
 	Crafty.e("Delay").delay(function() {
 		Crafty.scene("MainMenu");
 	}, 1000);
@@ -259,23 +260,23 @@ Crafty.scene("WithLove", function() {
 	});
 });
 
-Crafty.scene("StillLife", function() {
+Crafty.scene("Spaceships", function() {
 	sceneFromLines([
-		"                         ",
+		" ###    ###    ###  ##   ",
+		"   #      #      #  #o   ",
+		"  #      #      #     o# ",
+		"                      ## ",
 		" >                       ",
+		"  # o #   # o #   # o #  ",
+		"    os #   oos #   oos # ",
+		"   oo s#   oo s#   oo s# ",
+		"  #osss#  #osss#  #osss# ",
+		"   ####    ####    ####  ",
 		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
-		"                         ",
+		"                      ## ",
+		"  #      #      #     o# ",
+		"   #      #      #  #o   ",
+		" ###    ###    ###  ##   ",
 	]);
 
 	Crafty.e("Score");
@@ -287,7 +288,7 @@ Crafty.scene("StillLife", function() {
 	Crafty.e("Bonus").Objective({
 		text: "Before the timer runs out %s",
 		winCondition: Crafty("Bonus").eventFires("GameWon"),
-		loseCondition: Crafty("Bonus").timerExpires(250),
+		loseCondition: Crafty("Bonus").timerExpires(1500),
 	});
 	// Bonus: collect all yellow at max speed
 });
@@ -375,16 +376,22 @@ Crafty.scene("MainMenu", function() {
 		entries = [];
 		for(var i=0; i<arguments.length; i++){
 			var scene = arguments[i];
-			entries.push([2, i*2 + 2, scene, toDisplayedName(i + 1, scene)]);
+			var col = 1;
+			var row = i * 2 + 1;
+			if (row >= Game.rows) {
+				row -= Game.rows - 1;
+				col += 12;
+			};
+			entries.push([col, row, scene, toDisplayedName(i + 1, scene)]);
 		};
 		return entries;
 	};
 	one_player_stage_select = menuEntries(
 		"Hello", "Welcome", "WithLove", "Racetrack",
-		"Rooms", "Corridors", "ThankYou");
+		"Spaceships", "Rooms", "Corridors", "ThankYou");
 	Crafty.e("MenuPoints").MenuPoints([
-		[12, 2, one_player_stage_select, "One Player Mode"],
-		[12, 4, "TwoPlayerMode", "Two Player Mode"],
+		[8, 2, one_player_stage_select, "One Player Mode"],
+		[8, 4, "TwoPlayerMode", "Two Player Mode"],
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5).invincible = true;
 });
