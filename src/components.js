@@ -643,6 +643,10 @@ Crafty.c("Objective", {
 Crafty.c("Bonus", {
 	init: function() {
 		this.requires("Objective");
+		this.bind("Completed", this.handleCompletion);
+	},
+	handleCompletion: function() {
+		Crafty.trigger("BonusObjectiveCompleted", this);
 	},
 });
 
@@ -653,14 +657,57 @@ Crafty.c("Target", {
 	},
 	triggerGameOver: function() {
 		this.unbind("GameOver");
+		Crafty.trigger("TargetObjectiveCompleted", this);
 		Crafty.trigger("GameWon");
 		Crafty.trigger("GameOver");
 	},
 });
 
+Crafty.c("LogCompletion", {
+	init: function() {
+		this.bind("TargetObjectiveCompleted", this.handleTargetCompletion);
+		this.bind("BonusObjectiveCompleted", this.handleBonusCompletion);
+	},
+	LogCompletion: function(menuEntries) {
+		this.menuEntries = menuEntries;
+	},
+	getStageStatus: function(scene) {
+		var completed = Crafty.storage(this._getTargetStorageKey(scene));
+		var bonus = Crafty.storage(this._getBonusStorageKey(scene));
+		return {completed: completed, bonusCompleted: bonus};
+	},
+	handleTargetCompletion: function() {
+		this._handleCompletion(this._getTargetStorageKey(Crafty._current));
+	},
+	handleBonusCompletion: function() {
+		this._handleCompletion(this._getBonusStorageKey(Crafty._current));
+	},
+	_handleCompletion: function(storageKey) {
+		Crafty.storage(storageKey, true);
+		window.kongregate.stats.submit(storageKey, 1);
+	},
+	_getBonusStorageKey: function(scene) {
+		return this._getStorageKey(scene, "Bonus");
+	},
+	_getTargetStorageKey: function(scene) {
+		return this._getStorageKey(scene, "");
+	},
+	_getStorageKey: function(scene, type) {
+		return "Stage" + this._getIndex(scene) + type + "Completed";
+	},
+	_getIndex: function(name) {
+		var index = this.menuEntries.indexOf(name);
+		if (index === -1) {
+			throw new Error("Stage not found: " + name);
+		};
+		return index + 1;
+	}
+});
+
 Crafty.c("TwoPlayerTarget", {
 	init: function() {
-		this.requires("Target");
+		this.requires("Objective");
+		this.bind("Completed", this.triggerGameOver);
 	},
 	competeForPoints: function(target) {
 		var p1 = Crafty("Player1");
@@ -679,6 +726,12 @@ Crafty.c("TwoPlayerTarget", {
 			return p1won || p2won;
 		};
 	},
+	triggerGameOver: function() {
+		this.unbind("GameOver");
+		Crafty.trigger("TwoPlayerObjectiveCompleted", this);
+		Crafty.trigger("GameWon");
+		Crafty.trigger("GameOver");
+	},
 });
 
 Crafty.c("MenuPoints", {
@@ -693,7 +746,17 @@ Crafty.c("MenuPoints", {
 			var col = items[i][0];
 			var row = items[i][1];
 			var text = items[i][3];
+			var status = items[i][4];
+			if (status === undefined) {status = {}};
+			var prevItemStatus = (i > 0) ? items[i-1][4] : undefined;
+			if (i === 0 || prevItemStatus === undefined) {
+				status.locked = false;
+			} else {
+				status.locked = !(prevItemStatus.completed);
+			};
 			var pi = Crafty.e("PointItem, LengthIncrease");
+			this._setStatus(pi, status);
+			console.log(text, status.completed, status.locked, status.bonusCompleted, pi.color);
 			pi.PointItem(col, row);
 			if (items[i][2].constructor === String) {
 				pi.scene = items[i][2];
@@ -714,7 +777,9 @@ Crafty.c("MenuPoints", {
 		this.cells = [];
 	},
 	handleSelection: function(data) {
-		if (data.pointItem.back) {
+		if (data.pointItem.locked) {
+			return;
+		} else if (data.pointItem.back) {
 			this.restartCurrentScene();
 		} else if (data.pointItem.scene !== undefined) {
 			this.changeScene(data.pointItem.scene);
@@ -731,6 +796,16 @@ Crafty.c("MenuPoints", {
 		var tc = Crafty.e("TextCell").TextCell(14, 13).text("Back");
 		this.cells.push(tc);
 		this.cells.push.apply(this.cells, pi.cells);
+	},
+	_setStatus: function(pi, status) {
+		pi.locked = status.locked;
+		if (status.locked) {
+			pi.color = Color.grey;
+		} else if (status.bonusCompleted) {
+			pi.color = Color.blue;
+		} else {
+			pi.color = Color.yellow;
+		};
 	},
 });
 

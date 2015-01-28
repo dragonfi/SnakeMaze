@@ -29,8 +29,9 @@ function sceneFromLines(lines) {
 };
 
 Crafty.scene("SetUp", function() {
+	Crafty.e("LogCompletion");
 	Crafty.e("RestartOnSpace");
-	Crafty.e("Beeper");
+	//Crafty.e("Beeper");
 	Crafty.e("Delay").delay(function() {
 		Crafty.scene("MainMenu");
 	}, 1000);
@@ -267,10 +268,10 @@ Crafty.scene("Spaceships", function() {
 		"  #      #      #     o# ",
 		"                      ## ",
 		" >                       ",
-		"  # o #   # o #   # o #  ",
-		"    os #   oos #   oos # ",
-		"   oo s#   oo s#   oo s# ",
-		"  #osss#  #osss#  #osss# ",
+		"  #   #   #   #   #   #  ",
+		"     s #     s #     s # ",
+		"      s#      s#      s# ",
+		"  # sss#  # sss#  # sss# ",
 		"   ####    ####    ####  ",
 		"                         ",
 		"                      ## ",
@@ -288,7 +289,7 @@ Crafty.scene("Spaceships", function() {
 	Crafty.e("Bonus").Objective({
 		text: "Before the timer runs out %s",
 		winCondition: Crafty("Bonus").eventFires("GameWon"),
-		loseCondition: Crafty("Bonus").timerExpires(1500),
+		loseCondition: Crafty("Bonus").timerExpires(1000),
 	});
 	// Bonus: collect all yellow at max speed
 });
@@ -347,6 +348,8 @@ Crafty.scene("ThankYou", function() {
 		winCondition: Crafty("Bonus").eventFires("GameWon"),
 		loseCondition: Crafty("Bonus").eventFires("BadItemEaten"),
 	});
+}, function() {
+	Crafty.unbind("PointItemEaten");
 });
 
 // Scene: Gliders (Still Life)
@@ -370,6 +373,9 @@ Crafty.scene("TwoPlayerMode", function() {
 
 Crafty.scene("MainMenu", function() {
 	function menuEntries() {
+		var menuEntries = [];
+		menuEntries.push.apply(menuEntries, arguments);
+		Crafty("LogCompletion").LogCompletion(menuEntries);
 		function toDisplayedName(index, name) {
 			return index + ": " + name.replace(/([A-Z])/g, " $1");
 		};
@@ -382,7 +388,9 @@ Crafty.scene("MainMenu", function() {
 				row -= Game.rows - 1;
 				col += 12;
 			};
-			entries.push([col, row, scene, toDisplayedName(i + 1, scene)]);
+			var name = toDisplayedName(i + 1, scene);
+			var status = Crafty("LogCompletion").getStageStatus(scene);
+			entries.push([col, row, scene, name, status]);
 		};
 		return entries;
 	};
