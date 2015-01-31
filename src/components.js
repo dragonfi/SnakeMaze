@@ -506,8 +506,8 @@ Crafty.c("StatusLine", {
 	init: function() {
 		this.requires("TextCell");
 	},
-	StatusLine: function(lineNumber) {
-		this.TextCell(0, Game.rows + lineNumber, Game.cols);
+	StatusLine: function(lineNumber, align) {
+		this.TextCell(0, Game.rows + lineNumber, Game.cols, align);
 		return this;
 	},
 });

@@ -176,8 +176,8 @@ Crafty.scene("Rooms", function() {
 		"# #o     o#o   o#    #  #",
 		"# #o     o#o   o# #### ##",
 		"# #### ###### ### #### ##",
-		"#                       #",
-		"#>     r  r  r  r  r  r #",
+		"#>                      #",
+		"#      r  r  r  r  r  r #",
 		"# #### ######## #### ####",
 		"# #o       o#rr #ooo ooo#",
 		"# #o#######o#rr #o     o#",
@@ -396,11 +396,15 @@ Crafty.scene("MainMenu", function() {
 		return entries;
 	};
 	one_player_stage_select = menuEntries(
-		"Hello", "Welcome", "WithLove", "Racetrack",
-		"Rooms", "Corridors", "Spaceships", "ThankYou");
+		"Hello", "Welcome", "WithLove", "Rooms",
+		"Corridors", "Racetrack", "Spaceships", "ThankYou");
 	Crafty.e("MenuPoints").MenuPoints([
 		[8, 2, one_player_stage_select, "One Player Mode"],
 		[8, 4, "TwoPlayerMode", "Two Player Mode"],
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5).invincible = true;
+	Crafty.e("StatusLine").StatusLine(0, "center")
+		.text("Welcome to Snake Maze");
+	Crafty.e("StatusLine").StatusLine(1, "center")
+		.text("Use the arrow keys to move");
 });
