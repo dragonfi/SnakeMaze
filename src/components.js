@@ -407,14 +407,29 @@ Crafty.c("SceneChanger", {
 	},
 });
 
-Crafty.c("RestartOnSpace", {
+Crafty.c("SceneChangeControls", {
 	init: function() {
 		this.requires("Controls, SceneChanger");
 		this.keymap = {
-			"SPACE": this.restartCurrentScene,
+			"SPACE": this.handleSpacebar,
+			"R": this.restartCurrentScene,
 			"ESC": this.changeScene.bind(this, "MainMenu"),
 			"M": this.changeScene.bind(this, "MainMenu"),
 		};
+	},
+	handleSpacebar: function() {
+		if (Crafty("Target").completed) {
+			this.changeScene(this.nextScene());
+		} else {
+			this.restartCurrentScene();
+		};
+	},
+	nextScene: function() {
+		var next_index = this.scenes.indexOf(Crafty._current) + 1;
+		if (next_index >= this.scenes.length) {
+			return "MainMenu";
+		};
+		return this.scenes[next_index];
 	},
 });
 

@@ -30,7 +30,7 @@ function sceneFromLines(lines) {
 
 Crafty.scene("SetUp", function() {
 	Crafty.e("LogCompletion");
-	Crafty.e("RestartOnSpace");
+	Crafty.e("SceneChangeControls");
 	//Crafty.e("Beeper");
 	Crafty.e("Delay").delay(function() {
 		Crafty.scene("MainMenu");
@@ -376,6 +376,7 @@ Crafty.scene("MainMenu", function() {
 		var menuEntries = [];
 		menuEntries.push.apply(menuEntries, arguments);
 		Crafty("LogCompletion").LogCompletion(menuEntries);
+		Crafty("SceneChangeControls").scenes = menuEntries;
 		function toDisplayedName(index, name) {
 			return index + ": " + name.replace(/([A-Z])/g, " $1");
 		};
@@ -396,7 +397,7 @@ Crafty.scene("MainMenu", function() {
 	};
 	one_player_stage_select = menuEntries(
 		"Hello", "Welcome", "WithLove", "Racetrack",
-		"Spaceships", "Rooms", "Corridors", "ThankYou");
+		"Rooms", "Corridors", "Spaceships", "ThankYou");
 	Crafty.e("MenuPoints").MenuPoints([
 		[8, 2, one_player_stage_select, "One Player Mode"],
 		[8, 4, "TwoPlayerMode", "Two Player Mode"],
