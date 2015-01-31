@@ -410,6 +410,7 @@ Crafty.c("SceneChanger", {
 Crafty.c("SceneChangeControls", {
 	init: function() {
 		this.requires("Controls, SceneChanger");
+		this.requires("PrintSceneControlsOnGameOver");
 		this.keymap = {
 			"SPACE": this.handleSpacebar,
 			"R": this.restartCurrentScene,
@@ -433,6 +434,40 @@ Crafty.c("SceneChangeControls", {
 	},
 });
 
+Crafty.c("PrintSceneControlsOnGameOver", {
+	color: Color.black,
+	init: function() {
+		this.bind("GameWon", this.printGameWonControls);
+		this.bind("GameLost", this.printGameLostControls);
+	},
+	clearCells: function() {
+		if (this.cells) {
+			this.cells.forEach(function(cell) {
+				cell.destroy();
+			});
+		};
+		this.cells = [];
+	},
+	addTabulatedRow: function(row, text1, text2) {
+		for (var i = 0; i < Game.cols; i++) {
+			Crafty.e("Cell").attr("alpha", 0.5).Cell(i, row, this);
+		};
+		Crafty.e("TextCell").TextCell(0, row, 12, "right").text(text1);
+		Crafty.e("TextCell").TextCell(13, row, 12, "left").text(text2);
+	},
+	printGameWonControls: function() {
+		this.clearCells();
+		this.addTabulatedRow(6, "Next Stage:", "SPACE");
+		this.addTabulatedRow(7, "Retry Stage:", "R");
+		this.addTabulatedRow(8, "Return to Menu:", "M, ESC");
+	},
+	printGameLostControls: function() {
+		this.clearCells();
+		this.addTabulatedRow(7, "Retry Stage:", "R, SPACE");
+		this.addTabulatedRow(8, "Return to Menu:", "M, ESC");
+	},
+});
+
 Crafty.c("TextCell", {
 	init: function() {
 		this.requires("2D, DOM, Text, Tween");
@@ -441,11 +476,15 @@ Crafty.c("TextCell", {
 		this.align = (align !== undefined) ? align : "left"; 
 		this.col = col;
 		this.row = row;
-		this.width = width;
+		if (width === undefined) {
+			this.width = (Game.cols - col);
+		} else {
+			this.width = width;
+		};
 		this.attr({
 			x: Game.borderSize + Game.offset * col + 2,
 			y: Game.borderSize + Game.offset * row + 4,
-			w: (Game.cols - col) * Game.offset - Game.borderSize - 2,
+			w: this.width * Game.offset - Game.borderSize - 2,
 			h: Game.cellSize,
 			alpha: 0,
 		}).css({
@@ -645,6 +684,7 @@ Crafty.c("Objective", {
 	fail: function() {
 		this.failed = true;
 		this.unbind("EnterFrame");
+		this.trigger("Failed");
 		Crafty.trigger("ObjectiveChanged", this);
 	},
 	complete: function() {
@@ -668,12 +708,19 @@ Crafty.c("Bonus", {
 Crafty.c("Target", {
 	init: function() {
 		this.requires("Objective");
-		this.bind("Completed", this.triggerGameOver);
+		this.bind("Completed", this.triggerGameWon);
+		this.bind("Failed", this.triggerGameLost);
 	},
-	triggerGameOver: function() {
+	triggerGameWon: function() {
 		this.unbind("GameOver");
 		Crafty.trigger("TargetObjectiveCompleted", this);
 		Crafty.trigger("GameWon");
+		Crafty.trigger("GameOver");
+	},
+	triggerGameLost: function() {
+		this.unbind("GameOver");
+		Crafty.trigger("TargetObjectiveFailed", this);
+		Crafty.trigger("GameLost");
 		Crafty.trigger("GameOver");
 	},
 });
