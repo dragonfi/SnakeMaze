@@ -1,35 +1,27 @@
-Snake On a Slow Display
-=======================
+Snake Maze
+==========
 
-Can you keep up with the speed? The display sure doesn't.
-Check out how fast you can go!
+Another trip into the 2D grid.
+This time with slight puzzle elements.
 
 Controls
 --------
 
 * Move with the ARROW KEYS,
 * SPACE to restart the game,
-* ESC for something extra.
+* press ESC to return to the menu.
 
-Licence
--------
+Licensing
+---------
 
-I'm not releasing this as free software yet, but you are free to
-study, take a few lines of code or implement bugfixes.
-Just don't rip-off my work whole-sale, or put it up on a webpage
-without my permission.
+I DO NOT release this code under an open-source license.
 
-It's also possible to change my mind on this, so,
-don't hesitate to start a discussion on the topic.
+On the other hand, I put this code on github.com, so
+that you can learn from it, and maybe tinker with it
+for your own amusement.
 
-Todo
-----
+Just make sure that you don't re-distribute it. Thanks.
 
-* Beginning of snake is hard to see
-* Need more levels, maybe achievements
-* 2 player game
-
-Level Ideas
------------
-
-* target: reach a certain size, the longer the snake, the more decreasing points 
+That being said, if you want to contribute or have a
+strong argument on why should I use a license,
+feel free to start a discussion.

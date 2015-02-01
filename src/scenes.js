@@ -37,6 +37,27 @@ Crafty.scene("SetUp", function() {
 	}, 1000);
 });
 
+Crafty.scene("Credits", function() {
+	function putText(col, row, text) {
+		Crafty.e("TextCell").TextCell(col, row).text(text);
+	};
+	putText(2, 2, "Created by: David Bodor 'dragonfi'");
+	putText(2, 3, "Many thanks:");
+	putText(4, 4, "Adrienn Deme (playtest and a fun level)");
+	putText(4, 5, "Blanka Bodor (playtest)");
+	putText(2, 9, "You can read the source-code at");
+	putText(4, 10,
+		"<a href='http:/github.com/dragonfi/SnakeMaze'>" +
+			"github.com/dragonfi/SnakeMaze/" +
+		"</a>");
+	putText(2, 11, "This game lives at");
+	putText(4, 12,
+		"<a href='http://kongregate.com/games/drag0nfi/snake-maze'>" +
+			"kongregate.com/games/drag0nfi/snake-maze/" +
+		"</a>");
+	putText(2, 13, "If you see it somewhere else, please notify me.");
+});
+
 Crafty.scene("Hello", function() {
 	Crafty.e("BorderWalls");
 	var pi = Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(6, 2)
@@ -401,6 +422,7 @@ Crafty.scene("MainMenu", function() {
 	Crafty.e("MenuPoints").MenuPoints([
 		[8, 2, one_player_stage_select, "One Player Mode"],
 		[8, 4, "TwoPlayerMode", "Two Player Mode"],
+		[8, 12, "Credits", "Credits"],
 	]);
 	Crafty.e("Player1").Snake(2, 2, "right", 5).invincible = true;
 	Crafty.e("StatusLine").StatusLine(0, "center")
