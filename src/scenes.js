@@ -47,7 +47,7 @@ Crafty.scene("Credits", function() {
 	putText(4, 5, "Blanka Bodor (playtest)");
 	putText(2, 9, "You can read the source-code at");
 	putText(4, 10,
-		"<a href='http:/github.com/dragonfi/SnakeMaze' target='_blank'>" +
+		"<a href='http://github.com/dragonfi/SnakeMaze' target='_blank'>" +
 			"github.com/dragonfi/SnakeMaze/" +
 		"</a>");
 	putText(2, 11, "This game lives at");
