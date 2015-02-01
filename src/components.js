@@ -757,9 +757,20 @@ Crafty.c("LogCompletion", {
 		this.bind("TargetObjectiveCompleted", this.handleTargetCompletion);
 		this.bind("BonusObjectiveCompleted", this.handleBonusCompletion);
 		this.bind("GameOver", this.handleGameOver);
+		this.sendStoredValues();
 	},
 	LogCompletion: function(menuEntries) {
 		this.menuEntries = menuEntries;
+	},
+	sendStoredValues: function() {
+		for (var key in window.localStorage) {
+			var value = Crafty.storage(key);
+			if (typeof(value) === "number") {
+				window.kongregate.stats.submit(key, value);
+			} else if (typeof(value) === "boolean" && value) {
+				window.kongregate.stats.submit(key, 1);
+			};
+		};
 	},
 	getStageStatus: function(scene) {
 		var completed = Crafty.storage(this._getTargetStorageKey(scene));
@@ -877,7 +888,6 @@ Crafty.c("MenuPoints", {
 			};
 			var pi = Crafty.e("PointItem, LengthIncrease");
 			this._setStatus(pi, status);
-			console.log(text, status.completed, status.locked, status.bonusCompleted, pi.color);
 			pi.PointItem(col, row);
 			if (items[i][2].constructor === String) {
 				pi.scene = items[i][2];
