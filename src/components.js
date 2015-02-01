@@ -756,6 +756,7 @@ Crafty.c("LogCompletion", {
 	init: function() {
 		this.bind("TargetObjectiveCompleted", this.handleTargetCompletion);
 		this.bind("BonusObjectiveCompleted", this.handleBonusCompletion);
+		this.bind("GameOver", this.handleGameOver);
 	},
 	LogCompletion: function(menuEntries) {
 		this.menuEntries = menuEntries;
@@ -764,6 +765,30 @@ Crafty.c("LogCompletion", {
 		var completed = Crafty.storage(this._getTargetStorageKey(scene));
 		var bonus = Crafty.storage(this._getBonusStorageKey(scene));
 		return {completed: completed, bonusCompleted: bonus};
+	},
+	handleGameOver: function() {
+		this.logHighestLength();
+		this.logHighestSpeed();
+	},
+	logHighestLength: function() {
+		var highestLength = this.getHighest("Snake", "maxLength");
+		this.storeIfHigher("HighestLength", highestLength);
+	},
+	logHighestSpeed: function() {
+		var highestSpeed = this.getHighest("Snake", "_speed");
+		this.storeIfHigher("HighestSpeed", highestSpeed);
+	},
+	getHighest: function(component, name) {
+		var values = Crafty(component).get().map(function(c){
+			return c[name];
+		});
+		return Math.max.apply(values, values);
+	},
+	storeIfHigher: function(name, value) {
+		window.kongregate.stats.submit(name, value);
+		if (value > Crafty.storage(name)) {
+			Crafty.storage(name, value);
+		};
 	},
 	handleTargetCompletion: function() {
 		this._handleCompletion(this._getTargetStorageKey(Crafty._current));
