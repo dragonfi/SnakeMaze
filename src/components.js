@@ -437,8 +437,8 @@ Crafty.c("SceneChangeControls", {
 Crafty.c("PrintSceneControlsOnGameOver", {
 	color: Color.black,
 	init: function() {
-		this.bind("GameWon", this.printGameWonControls);
-		this.bind("GameLost", this.printGameLostControls);
+		this.requires("SceneChangeControls");
+		this.bind("GameOver", this.handleGameOver);
 	},
 	clearCells: function() {
 		if (this.cells) {
@@ -455,16 +455,41 @@ Crafty.c("PrintSceneControlsOnGameOver", {
 		Crafty.e("TextCell").TextCell(0, row, 12, "right").text(text1);
 		Crafty.e("TextCell").TextCell(13, row, 12, "left").text(text2);
 	},
-	printGameWonControls: function() {
+	gameIsTwoPlayerGame: function() {
+		return Boolean(Crafty("TwoPlayerTarget").length);
+	},
+	gameWon: function() {
+		return Crafty("Target").completed
+	},
+	handleGameOver: function() {
 		this.clearCells();
+		if (this.gameIsTwoPlayerGame()) {
+			this.printTwoPlayerControls();
+		} else if (this.gameWon() && this.nextScene() === "MainMenu") {
+			this.printBackToMenuControls();
+		} else if (this.gameWon()) {
+			this.printGameWonControls();
+		} else {
+			this.printGameLostControls();
+		};
+	},
+	printGameWonControls: function() {
 		this.addTabulatedRow(6, "Next Stage:", "SPACE");
-		this.addTabulatedRow(7, "Retry Stage:", "R");
+		this.addTabulatedRow(7, "Restart Stage:", "R");
 		this.addTabulatedRow(8, "Return to Menu:", "M, ESC");
 	},
 	printGameLostControls: function() {
-		this.clearCells();
 		this.addTabulatedRow(7, "Retry Stage:", "R, SPACE");
 		this.addTabulatedRow(8, "Return to Menu:", "M, ESC");
+	},
+	printTwoPlayerControls: function() {
+		this.addTabulatedRow(7, "Play Again:", "R, SPACE");
+		this.addTabulatedRow(8, "Return to Menu:", "M, ESC");
+	},
+	printBackToMenuControls: function() {
+		this.addTabulatedRow(5, "Congratulations!", "All Stage is cleared.");
+		this.addTabulatedRow(7, "Restart Stage:", "R");
+		this.addTabulatedRow(8, "Return to Menu:", "M, ESC, SPACE");
 	},
 });
 
@@ -769,7 +794,8 @@ Crafty.c("LogCompletion", {
 Crafty.c("TwoPlayerTarget", {
 	init: function() {
 		this.requires("Objective");
-		this.bind("Completed", this.triggerGameOver);
+		this.bind("Completed", this.triggerGameWon);
+		this.bind("Failed", this.triggerGameLost);
 	},
 	competeForPoints: function(target) {
 		var p1 = Crafty("Player1");
@@ -788,10 +814,16 @@ Crafty.c("TwoPlayerTarget", {
 			return p1won || p2won;
 		};
 	},
-	triggerGameOver: function() {
+	triggerGameWon: function() {
 		this.unbind("GameOver");
 		Crafty.trigger("TwoPlayerObjectiveCompleted", this);
 		Crafty.trigger("GameWon");
+		Crafty.trigger("GameOver");
+	},
+	triggerGameLost: function() {
+		this.unbind("GameOver");
+		Crafty.trigger("TwoPlayerObjectiveFailed", this);
+		Crafty.trigger("GameLost");
 		Crafty.trigger("GameOver");
 	},
 });
