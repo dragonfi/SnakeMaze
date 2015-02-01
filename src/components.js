@@ -419,7 +419,9 @@ Crafty.c("SceneChangeControls", {
 		};
 	},
 	handleSpacebar: function() {
-		if (Crafty("Target").completed) {
+		if (Crafty._current === "Credits") {
+			this.changeScene("MainMenu");
+		} else if (Crafty("Target").completed) {
 			this.changeScene(this.nextScene());
 		} else {
 			this.restartCurrentScene();
