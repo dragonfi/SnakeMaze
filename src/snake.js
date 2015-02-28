@@ -10,17 +10,17 @@ var Game = {
 	borderSize: 5,
 	cellDelay: 500,
 	speedDelta: 0.2,
-}
+};
 
 Game.offset = Game.tileSize + Game.borderSize;
 Game.w = Game.cols * Game.offset + Game.borderSize;
 Game.h = (Game.rows + Game.statusLines) * Game.offset + Game.borderSize;
 
 window.addEventListener("keydown", function(e) {
-    // ESC, SPACE and ARROW KEYS
-    if([27, 32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-    }
+	// ESC, SPACE and ARROW KEYS
+	if([27, 32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+		e.preventDefault();
+	}
 }, false);
 
 window.onload = function() {
@@ -36,7 +36,9 @@ window.onload = function() {
 			"bloop": ["bloop.wav"],
 		},
 	}, function() {
-		Crafty.bind("SceneChange", function(data) {console.log(data.newScene)});
+		Crafty.bind("SceneChange", function(data) {
+			console.log(data.newScene);
+		});
 		Crafty.scene("SetUp");
 	});
 };

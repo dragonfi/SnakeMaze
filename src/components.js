@@ -69,7 +69,7 @@ Crafty.c("EmptyCellGetter", {
 			var key = this._key(cell);
 			if (!(key in buckets)) {
 				buckets[key] = [];
-			};
+			}
 			buckets[key].push(cell);
 		}.bind(this));
 		return buckets;
@@ -85,9 +85,9 @@ Crafty.c("EmptyCellGetter", {
 				var position = {col: col, row: row};
 				if (!(this._key(position) in buckets)) {
 					emptyCells.push(position);
-				};
-			};
-		};
+				}
+			}
+		}
 		return emptyCells;
 	},
 });
@@ -104,7 +104,7 @@ Crafty.c("Grid", {
 	clearCells: function() {
 		for (var index in this.cells) {
 			this.cells[index].clear();
-		};
+		}
 		this.cells = [];
 	},
 });
@@ -117,7 +117,7 @@ Crafty.c("PointItem", {
 			if (args.pointItem === this) {
 				this.clearCells();
 				this.destroy();
-			};
+			}
 		});
 	},
 	PointItem: function(col, row) {
@@ -135,7 +135,7 @@ Crafty.c("Reappearing", {
 			if (args.pointItem === this) {
 				var newPI = this.clone();
 				newPI.attr("randomMask", this.randomMask).randomMove();
-			};
+			}
 		});
 	},
 	randomMove: function() {
@@ -144,12 +144,12 @@ Crafty.c("Reappearing", {
 			validCells = validCells.filter(function(coords) {
 				return this.randomMask[coords.row].charAt(coords.col) === "o";
 			}.bind(this));
-		};
+		}
 		var coords = Utils.rand.choice(validCells);
 		if (coords === undefined) {
 			Crafty.trigger("NoFreeCellsLeft");
 			return;
-		};
+		}
 		this.col = coords.col;
 		this.row = coords.row;
 		this.createCell(this.col, this.row, this);
@@ -163,7 +163,7 @@ Crafty.c("Neumann", {
 			if (args.pointItem === this) {
 				var pi = this.clone();
 				pi.attr({randomMask: this.randomMask}).randomMove();
-			};
+			}
 		});
 	},
 });
@@ -207,10 +207,10 @@ Crafty.c("BorderWalls", {
 	_is_border_cell: function(col, row) {
 		if (col === 0 || row === 0) {
 			return true;
-		};
+		}
 		if (col === Game.cols - 1 || row === Game.rows - 1) {
 			return true;
-		};
+		}
 		return false;
 	},
 	createWalls: function() {
@@ -218,9 +218,9 @@ Crafty.c("BorderWalls", {
 			for (var row = 0; row < Game.rows; row++) {
 				if (this._is_border_cell(col, row)) {
 					this.createCell(col, row, this);
-				};
-			};
-		};
+				}
+			}
+		}
 	},
 });
 
@@ -251,7 +251,7 @@ Crafty.c("Snake", {
 		if (value !== undefined && value > 0) {
 			this._speed = value;
 			this._recalculateMoveDelay();
-		};
+		}
 		return this._speed;
 	},
 	_recalculateMoveDelay: function() {
@@ -269,7 +269,7 @@ Crafty.c("Snake", {
 	handleCollisions: function(objs) {
 		for (var index in objs) {
 			this._handleCollision(objs[index]);
-		};
+		}
 	},
 	_handleCollision: function(obj) {
 		if (obj.has("PointItem")) {
@@ -277,14 +277,14 @@ Crafty.c("Snake", {
 			if (obj.has("LengthIncrease")) {
 				this.maxLength += 1;
 				Crafty.trigger("LengthItemEaten", event_data);
-			};
+			}
 			if (obj.has("SpeedIncrease")) {
 				this.speed(this.speed() + Game.speedDelta);
 				Crafty.trigger("SpeedItemEaten", event_data);
-			};
+			}
 			if (obj.has("ScoreIncrease")) {
 				this.score += 1;
-			};
+			}
 			if (obj.has("Decrease")) {
 				this.speed(this.speed() - Game.speedDelta);
 				this.maxLength -= 1;
@@ -293,14 +293,14 @@ Crafty.c("Snake", {
 				if (this.maxLength < 1) {
 					this.status = "lost";
 					this.stopMovement();
-				};
-			};
+				}
+			}
 			Crafty.trigger("PointItemEaten", event_data);
 		} else if ((obj.has("Wall") || obj.has("Snake")) && !this.invincible) {
 			this.status = "lost";
 			this.stopMovement();
 			Crafty.trigger("WallHit");
-		};
+		}
 		Crafty.trigger("SnakeChanged", this);
 	},
 	_addSegment: function(col, row) {
@@ -309,7 +309,7 @@ Crafty.c("Snake", {
 		while (this.cells.length > this.maxLength) {
 			var cell = this.cells.shift();
 			cell.clear();
-		};
+		}
 	},
 	moveSnake: function() {
 		this.dir = this.newDir;
@@ -322,7 +322,7 @@ Crafty.c("Snake", {
 	changeDirection: function(newDir) {
 		if (this._opposite_direction[this.dir] === newDir) {
 			return;
-		};
+		}
 		this.newDir = newDir;
 	},
 	_directions: {
@@ -349,8 +349,8 @@ Crafty.c("Controls", {
 		for (var key in this.keymap) {
 			if (this.isDown(key)) {
 				this.keymap[key].call(this);
-			};
-		};
+			}
+		}
 	},
 	remove: function() {
 		this.unbind("KeyDown");
@@ -393,7 +393,7 @@ Crafty.c("SceneChanger", {
 	restartCurrentScene: function() {
 		if (this.currentScene === undefined) {
 			this.currentScene = Crafty._current;
-		};
+		}
 		this.changeScene(this.currentScene);
 	},
 	changeScene: function(name) {
@@ -425,13 +425,13 @@ Crafty.c("SceneChangeControls", {
 			this.changeScene(this.nextScene());
 		} else {
 			this.restartCurrentScene();
-		};
+		}
 	},
 	nextScene: function() {
 		var next_index = this.scenes.indexOf(Crafty._current) + 1;
 		if (next_index >= this.scenes.length) {
 			return "MainMenu";
-		};
+		}
 		return this.scenes[next_index];
 	},
 });
@@ -447,13 +447,13 @@ Crafty.c("PrintSceneControlsOnGameOver", {
 			this.cells.forEach(function(cell) {
 				cell.destroy();
 			});
-		};
+		}
 		this.cells = [];
 	},
 	addTabulatedRow: function(row, text1, text2) {
 		for (var i = 0; i < Game.cols; i++) {
 			Crafty.e("Cell").attr("alpha", 0.5).Cell(i, row, this);
-		};
+		}
 		Crafty.e("TextCell").TextCell(0, row, 12, "right").text(text1);
 		Crafty.e("TextCell").TextCell(13, row, 12, "left").text(text2);
 	},
@@ -461,7 +461,7 @@ Crafty.c("PrintSceneControlsOnGameOver", {
 		return Boolean(Crafty("TwoPlayerTarget").length);
 	},
 	gameWon: function() {
-		return Crafty("Target").completed
+		return Crafty("Target").completed;
 	},
 	handleGameOver: function() {
 		this.clearCells();
@@ -473,7 +473,7 @@ Crafty.c("PrintSceneControlsOnGameOver", {
 			this.printGameWonControls();
 		} else {
 			this.printGameLostControls();
-		};
+		}
 	},
 	printGameWonControls: function() {
 		this.addTabulatedRow(6, "Next Stage:", "SPACE");
@@ -507,7 +507,7 @@ Crafty.c("TextCell", {
 			this.width = (Game.cols - col);
 		} else {
 			this.width = width;
-		};
+		}
 		this.attr({
 			x: Game.borderSize + Game.offset * col + 2,
 			y: Game.borderSize + Game.offset * row + 4,
@@ -545,7 +545,7 @@ Crafty.c("Score", {
 		this.lines = [
 			this._snakeLine(0),
 			this._snakeLine(1),
-		]
+		];
 		this.gameIsOver = false;
 		this.bonusLine = Crafty.e("StatusLine").StatusLine(2);
 		this.objectivesLine = Crafty.e("StatusLine").StatusLine(1);
@@ -572,8 +572,8 @@ Crafty.c("Score", {
 		snakeLine.textColor = function(color) {
 			for (var i = 0; i < this.length; i++) {
 				this[i].textColor(color);
-			};
-		}
+			}
+		};
 		return snakeLine;
 	},
 	_updateSnakeLine: function(line, snake) {
@@ -584,7 +584,7 @@ Crafty.c("Score", {
 		} else if (snake.status === "lost") {
 			status = " -- Lost";
 			this.lines[line].textColor(Color.red);
-		};
+		}
 		this.lines[line][0].text(snake.name + ":");
 		this.lines[line][1].text("Score: " + snake.score);
 		this.lines[line][2].text("Length: " + snake.maxLength);
@@ -597,7 +597,7 @@ Crafty.c("Score", {
 			this._updateSnakeLine(0, snake);
 		} else if (snake.has("Player2")) {
 			this._updateSnakeLine(1, snake);
-		};
+		}
 	},
 	updateObjective: function(objective) {
 		if (objective.has("TwoPlayerTarget")) {
@@ -609,14 +609,14 @@ Crafty.c("Score", {
 		} else if (objective.has("Bonus")) {
 			this.colorLine(this.bonusLine, objective);
 			this.bonusLine.text("Bonus: " + objective.text);
-		};
+		}
 	},
 	colorLine: function(line, objective) {
 		if (objective.completed) {
 			line.textColor(Color.green);
 		} else if (objective.failed) {
 			line.textColor(Color.red);
-		};
+		}
 	},
 	handleGameOver: function() {
 		this.gameIsOver = true;
@@ -638,7 +638,7 @@ Crafty.c("GameOverIfNoSnakesArePlaying", {
 		if (noSnakesArePlaying) {
 			this.trigger("GameOver");
 			this.unbind("EnterFrame");
-		};
+		}
 	},
 });
 
@@ -651,7 +651,7 @@ Crafty.c("ObjectiveConditions", {
 			if (this["_eventFired_" + eventName]) {
 				this.unbind(eventName);
 				return true;
-			};
+			}
 		};
 	},
 	countAtLeast: function(componentName, targetNumber) {
@@ -698,14 +698,14 @@ Crafty.c("Objective", {
 			this.complete();
 		} else if (this.loseCondition()) {
 			this.fail();
-		};
+		}
 		Crafty.trigger("ObjectiveChanged", this);
 	},
 	updateText: function() {
 		var text = this.textTemplate;
 		for(var i = 0; i < arguments.length; i++) {
 			text = text.replace("%s", arguments[i]);
-		};
+		}
 		this.text = text;
 	},
 	fail: function() {
@@ -769,8 +769,8 @@ Crafty.c("LogCompletion", {
 				window.kongregate.stats.submit(key, value);
 			} else if (typeof(value) === "boolean" && value) {
 				window.kongregate.stats.submit(key, 1);
-			};
-		};
+			}
+		}
 	},
 	getStageStatus: function(scene) {
 		var completed = Crafty.storage(this._getTargetStorageKey(scene));
@@ -799,7 +799,7 @@ Crafty.c("LogCompletion", {
 		window.kongregate.stats.submit(name, value);
 		if (value > Crafty.storage(name)) {
 			Crafty.storage(name, value);
-		};
+		}
 	},
 	handleTargetCompletion: function() {
 		this._handleCompletion(this._getTargetStorageKey(Crafty._current));
@@ -824,7 +824,7 @@ Crafty.c("LogCompletion", {
 		var index = this.menuEntries.indexOf(name);
 		if (index === -1) {
 			throw new Error("Stage not found: " + name);
-		};
+		}
 		return index + 1;
 	}
 });
@@ -843,12 +843,12 @@ Crafty.c("TwoPlayerTarget", {
 			if (p1won) {
 				p1.status = "won";
 				p2.status = "lost";
-			};
+			}
 			var p2won = (p2.score >= 10 && p2.status !== "lost");
 			if (p2won) {
 				p2.status = "won";
 				p1.status = "lost";
-			};
+			}
 			return p1won || p2won;
 		};
 	},
@@ -878,14 +878,13 @@ Crafty.c("MenuPoints", {
 			var col = items[i][0];
 			var row = items[i][1];
 			var text = items[i][3];
-			var status = items[i][4];
-			if (status === undefined) {status = {}};
+			var status = items[i][4] || {};
 			var prevItemStatus = (i > 0) ? items[i-1][4] : undefined;
 			if (i === 0 || prevItemStatus === undefined) {
 				status.locked = false;
 			} else {
 				status.locked = !(prevItemStatus.completed);
-			};
+			}
 			var pi = Crafty.e("PointItem, LengthIncrease");
 			this._setStatus(pi, status);
 			pi.PointItem(col, row);
@@ -895,11 +894,11 @@ Crafty.c("MenuPoints", {
 				pi.menuEntries = items[i][2];
 			} else {
 				throw new Error("Expected menu entries or scene name");
-			};
+			}
 			var tc = Crafty.e("TextCell").TextCell(col + 1, row).text(text);
 			this.cells.push(tc);
 			this.cells.push.apply(this.cells, pi.cells);
-		};
+		}
 	},
 	clearCells: function() {
 		this.cells.forEach(function(c) {
@@ -918,7 +917,7 @@ Crafty.c("MenuPoints", {
 			this.clearCells();
 			this.MenuPoints(data.pointItem.menuEntries);
 			this.addResetItem();
-		};
+		}
 	},
 	addResetItem: function() {
 		var pi = Crafty.e("PointItem, LengthIncrease");
@@ -936,7 +935,7 @@ Crafty.c("MenuPoints", {
 			pi.color = Color.blue;
 		} else {
 			pi.color = Color.yellow;
-		};
+		}
 	},
 });
 

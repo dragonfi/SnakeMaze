@@ -21,12 +21,12 @@ function sceneFromLines(lines) {
 		line.split("").forEach(function(char, col) {
 			if (char === " "){
 				return;
-			};
+			}
 			createComponent[char](col, row);
 		});
 	});
 	Crafty.e("Score");
-};
+}
 
 Crafty.scene("SetUp", function() {
 	Crafty.e("LogCompletion");
@@ -40,7 +40,7 @@ Crafty.scene("SetUp", function() {
 Crafty.scene("Credits", function() {
 	function putText(col, row, text) {
 		Crafty.e("TextCell").TextCell(col, row).text(text);
-	};
+	}
 	putText(2, 2, "Created by: David Bodor 'dragonfi'");
 	putText(2, 3, "Many thanks:");
 	putText(4, 4, "Adrienn Deme (playtest and a fun level)");
@@ -60,7 +60,7 @@ Crafty.scene("Credits", function() {
 
 Crafty.scene("Hello", function() {
 	Crafty.e("BorderWalls");
-	var pi = Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(6, 2)
+	var pi = Crafty.e("PointItem, Neumann, LengthIncrease").PointItem(6, 2);
 	pi.attr("randomMask", [
 		"                         ",
 		"                         ",
@@ -336,7 +336,7 @@ Crafty.scene("ThankYou", function() {
 	Crafty.bind("PointItemEaten", function(attrs) {
 		if (!attrs.pointItem.has("LengthIncrease")) {
 			return;
-		};
+		}
 		for (var i = 0; i < 2; i++) {
 			var textItem = Crafty.e("Reappearing, Decrease");
 			textItem.attr("randomMask", [
@@ -356,7 +356,7 @@ Crafty.scene("ThankYou", function() {
 				"                         ",
 				"                         ",
 			]).randomMove();
-		};
+		}
 	});
 	Crafty.e("Score");
 	Crafty.e("Target").Objective({
@@ -394,13 +394,13 @@ Crafty.scene("TwoPlayerMode", function() {
 
 Crafty.scene("MainMenu", function() {
 	function menuEntries() {
-		var menuEntries = [];
-		menuEntries.push.apply(menuEntries, arguments);
-		Crafty("LogCompletion").LogCompletion(menuEntries);
-		Crafty("SceneChangeControls").scenes = menuEntries;
+		var entries = [];
+		entries.push.apply(entries, arguments);
+		Crafty("LogCompletion").LogCompletion(entries);
+		Crafty("SceneChangeControls").scenes = entries;
 		function toDisplayedName(index, name) {
 			return index + ": " + name.replace(/([A-Z])/g, " $1");
-		};
+		}
 		entries = [];
 		for(var i=0; i<arguments.length; i++){
 			var scene = arguments[i];
@@ -409,13 +409,13 @@ Crafty.scene("MainMenu", function() {
 			if (row >= Game.rows) {
 				row -= Game.rows - 1;
 				col += 12;
-			};
+			}
 			var name = toDisplayedName(i + 1, scene);
 			var status = Crafty("LogCompletion").getStageStatus(scene);
 			entries.push([col, row, scene, name, status]);
-		};
+		}
 		return entries;
-	};
+	}
 	one_player_stage_select = menuEntries(
 		"Hello", "Welcome", "WithLove", "Rooms",
 		"Corridors", "Racetrack", "Spaceships", "ThankYou");
